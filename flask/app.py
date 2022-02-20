@@ -1,14 +1,10 @@
 from datetime import date
 from functools import wraps
 from http import client
-from os import stat
-from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
+from flask import Flask, request, session, jsonify
 from flask_cors import CORS, cross_origin
 import pymongo
 import bcrypt
-import email
-import json
-import smtplib
 import jwt
 
 app = Flask(__name__)
@@ -28,10 +24,9 @@ users = db.users
 
 @app.errorhandler(404)
 def page_not_found(e):
-    return render_template('404.html'), 404
+    return jsonify({'status': 'fail', 'message': 'Page not found'})
 
 
-@staticmethod
 def decode_jwt_token(token):
     try:
         payload = jwt.decode(token, app.secret_key, algorithms=['HS256'])
@@ -42,7 +37,6 @@ def decode_jwt_token(token):
         return "Invalid token. Please log in again.", 401
 
 
-@staticmethod
 def encode_jwt_token(user_id):
     import datetime
     try:
@@ -83,7 +77,7 @@ def register():
     user_found = users.find_one({'username': username})
     if user_found:
         return jsonify({'status': 'fail', 'message': 'Username already exists'}), 409
-    email_found = users.find_one({'email': request.form['email']})
+    email_found = users.find_one({'email': email})
     if email_found:
         return jsonify({'status': 'fail', 'message': 'Email already exists'}), 401
     hashed_password = bcrypt.hashpw(
@@ -98,7 +92,7 @@ def register():
         # encode token
         token = encode_jwt_token(user_id)
         if token[1] == 200:
-            return jsonify({'status': 'success', 'message': 'User registered successfully', 'token': token[0].decode('utf-8')}), 200
+            return jsonify({'status': 'success', 'message': 'User registered successfully', 'token': str(token[0].decode('utf-8'))}), 200
         return jsonify({'status': 'fail', 'message': token}), 401
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)}), 500
@@ -116,9 +110,9 @@ def login():
         if user:
             # check if password is correct
             if bcrypt.checkpw(password.encode('utf-8'), user['password']):
-                auth_token = encode_jwt_token(user['_id'])
+                auth_token = encode_jwt_token(str(user['_id']))
                 if auth_token[1] == 200:
-                    return jsonify({'status': 'success', 'message': 'User logged in successfully', 'token': auth_token[0].decode('utf-8')}), 200
+                    return jsonify({'status': 'success', 'message': 'User logged in successfully', 'token': str(auth_token[0].decode('utf-8'))}), 200
                 return jsonify({'status': 'fail', 'message': auth_token}), 401
             else:
                 return jsonify({'status': 'fail', 'message': 'Incorrect password'}), 401
