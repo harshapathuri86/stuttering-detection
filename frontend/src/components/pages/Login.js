@@ -120,9 +120,9 @@ export default function Login() {
             draggable
             pauseOnHover
           />
-          <Typography component="h1" variant="h5">
-            Sign in
-          </Typography>
+          {/* <Typography component="h1" variant="h5">
+          Sign in
+          </Typography> */}
           <form onSubmit={handleSubmit(onSubmit)}>
             <TextField
               variant="outlined"
@@ -198,7 +198,7 @@ export default function Login() {
           </form>
           <Grid container>
             <Grid item xs>
-              <Link href="/forgot_password" variant="body2">
+              <Link href="/forgotpassword" variant="body2">
                 Forgot password?
               </Link>
             </Grid>

@@ -67,7 +67,7 @@ export default function ForgotPassword() {
             alignItems: "center",
           }}
         >
-          {linksent ? (
+          {!linksent ? (
             <div>
               <ToastContainer
                 position="bottom-center"
@@ -80,9 +80,9 @@ export default function ForgotPassword() {
                 draggable
                 pauseOnHover
               />
-              <Typography component="h1" variant="h5">
+              {/* <Typography component="h1" variant="h5">
                 Forgot Password
-              </Typography>
+              </Typography> */}
               <form onSubmit={handleSubmit(onSubmit)}>
                 <TextField
                   variant="outlined"

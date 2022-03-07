@@ -98,7 +98,7 @@ export default function NavBar() {
               <Button
                 variant="text"
                 color="inherit"
-                href="/logout"
+                onClick={handleLogout}
                 sx={{ mr: 2 }}
               >
                 Logout

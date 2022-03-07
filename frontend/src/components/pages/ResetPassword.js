@@ -34,7 +34,7 @@ export default function ForgotPassword() {
 
   const [showPassword, setShowPassword] = React.useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
-
+  const [jwt, setJwt] = React.useState("");
   const handleClickShowPassword = () => {
     setShowPassword(!showPassword);
   };
@@ -73,6 +73,14 @@ export default function ForgotPassword() {
       });
   };
 
+  useEffect(() => {
+    const query = new URLSearchParams(window.location.search);
+    const jwt = query.get("jwt");
+    if (jwt) {
+      setJwt(jwt);
+    }
+  }, []);
+
   return (
     <ThemeProvider theme={theme}>
       <Container component="main" maxWidth="xs">
@@ -96,91 +104,103 @@ export default function ForgotPassword() {
             draggable
             pauseOnHover
           />
-          <Typography component="h1" variant="h5">
+          {/* <Typography component="h1" variant="h5">
             Set new password
-          </Typography>
-          <form onSubmit={handleSubmit(onSubmit)}>
-            <TextField
-              variant="outlined"
-              margin="normal"
-              fullWidth
-              label="New password"
-              type={showPassword ? "text" : "password"}
-              id="password"
-              {...register("password", {
-                required: true,
-                validate: {
-                  length: (value) =>
-                    value.length > 3 || "Must be at least 3 characters",
-                },
-              })}
-              helperText={formState.errors.password?.message}
-              error={formState.errors.password ? true : false}
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton
-                      aria-label="toggle password visibility"
-                      onClick={() => {
-                        setShowPassword(!showPassword);
-                      }}
-                    >
-                      {showPassword ? <Visibility /> : <VisibilityOff />}
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }}
-            />
-            <TextField
-              variant="outlined"
-              margin="normal"
-              fullWidth
-              label="Confirm new password"
-              type={showConfirmPassword ? "text" : "password"}
-              id="confirmPassword"
-              {...register("confirmPassword", {
-                required: true,
-                validate: {
-                  length: (value) =>
-                    value.length > 3 || "Must be at least 3 characters",
-                  confirmPassword: (value) => {
-                    const { password } = getValues();
-
-                    return value === password || "Passwords do not match";
+          </Typography> */}
+          {jwt ? (
+            <form onSubmit={handleSubmit(onSubmit)}>
+              <TextField
+                variant="outlined"
+                margin="normal"
+                fullWidth
+                label="New password"
+                type={showPassword ? "text" : "password"}
+                id="password"
+                {...register("password", {
+                  required: true,
+                  validate: {
+                    length: (value) =>
+                      value.length > 3 || "Must be at least 3 characters",
                   },
-                },
-              })}
-              helperText={formState.errors.confirmPassword?.message}
-              error={formState.errors.confirmPassword ? true : false}
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton
-                      aria-label="toggle password visibility"
-                      onClick={() => {
-                        setShowConfirmPassword(!showConfirmPassword);
-                      }}
-                    >
-                      {showConfirmPassword ? <Visibility /> : <VisibilityOff />}
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }}
-            />
-            <Button
-              type="submit"
-              fullWidth
-              variant="contained"
-              color="primary"
-              disabled={
-                formState.isSubmitting || formState.isValidating ? true : false
-              }
-            >
-              {formState.isSubmitting || formState.isValidating
-                ? "Loading..."
-                : "Set new Password"}
-            </Button>
-          </form>
+                })}
+                helperText={formState.errors.password?.message}
+                error={formState.errors.password ? true : false}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        aria-label="toggle password visibility"
+                        onClick={() => {
+                          setShowPassword(!showPassword);
+                        }}
+                      >
+                        {showPassword ? <Visibility /> : <VisibilityOff />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+              />
+              <TextField
+                variant="outlined"
+                margin="normal"
+                fullWidth
+                label="Confirm new password"
+                type={showConfirmPassword ? "text" : "password"}
+                id="confirmPassword"
+                {...register("confirmPassword", {
+                  required: true,
+                  validate: {
+                    length: (value) =>
+                      value.length > 3 || "Must be at least 3 characters",
+                    confirmPassword: (value) => {
+                      const { password } = getValues();
+
+                      return value === password || "Passwords do not match";
+                    },
+                  },
+                })}
+                helperText={formState.errors.confirmPassword?.message}
+                error={formState.errors.confirmPassword ? true : false}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        aria-label="toggle password visibility"
+                        onClick={() => {
+                          setShowConfirmPassword(!showConfirmPassword);
+                        }}
+                      >
+                        {showConfirmPassword ? (
+                          <Visibility />
+                        ) : (
+                          <VisibilityOff />
+                        )}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+              />
+              <Button
+                type="submit"
+                fullWidth
+                variant="contained"
+                color="primary"
+                disabled={
+                  formState.isSubmitting || formState.isValidating
+                    ? true
+                    : false
+                }
+              >
+                {formState.isSubmitting || formState.isValidating
+                  ? "Loading..."
+                  : "Set new Password"}
+              </Button>
+            </form>
+          ) : (
+            <Typography component="h1" variant="h5">
+              Not authorized
+            </Typography>
+          )}
         </Box>
       </Container>
     </ThemeProvider>
