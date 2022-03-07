@@ -1,16 +1,5 @@
-from datetime import date
-from functools import wraps
-from http import client
-import json
-from urllib import response
-from weakref import ref
-from flask import Flask, request, session, jsonify
+from flask import Flask, request, jsonify
 from flask_cors import CORS
-from grpc import access_token_call_credentials
-from importlib_metadata import method_cache
-from numpy import identity
-import pymongo
-import jwt
 import bcrypt
 import pymongo
 from flask_jwt_extended import JWTManager, jwt_required, create_access_token, get_jwt_identity, get_current_user, current_user, get_jwt, create_refresh_token
@@ -19,7 +8,6 @@ from datetime import datetime, timedelta, timezone
 from flask_mail import Mail, Message
 from threading import Thread
 from bson import json_util
-from sklearn.decomposition import dict_learning_online
 
 
 app = Flask(__name__)
