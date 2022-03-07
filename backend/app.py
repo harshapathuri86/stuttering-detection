@@ -1,170 +1,256 @@
 from datetime import date
-import email
 from functools import wraps
 from http import client
+import json
+from urllib import response
+from weakref import ref
 from flask import Flask, request, session, jsonify
 from flask_cors import CORS
+from grpc import access_token_call_credentials
 from importlib_metadata import method_cache
+from numpy import identity
 import pymongo
-import bcrypt
 import jwt
-import os
+import bcrypt
+import pymongo
+from flask_jwt_extended import JWTManager, jwt_required, create_access_token, get_jwt_identity, get_current_user, current_user, get_jwt, create_refresh_token
+from pymongo import MongoClient
+from datetime import datetime, timedelta, timezone
+from flask_mail import Mail, Message
+from threading import Thread
+from bson import json_util
+from sklearn.decomposition import dict_learning_online
+
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True, origins='*')
-# add cors headers
-
-ROLES = [
-    'ADMIN',
-    'DOCTOR',
-    'PATIENT',
-]
-
-app.secret_key = "\x81\x05\xdc\xf0\xe7{Ba\xb8!\x85\x08\xa5\x1b\xe9\xf3\x0c\xf2)\x82\xdd\xd0\xa5A"
-
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=1)
+app.config["JWT_REFRESH_TOKEN_EXPIRES"] = timedelta(days=30)
+app.config['JWT_SECRET_KEY'] = b'u\xefB@2\xc3\xdbU\xa2S T\xbe\xdc\xe2\xa9'
+app.config['MONGO_DBNAME'] = 'dfs'
+app.config['MONGO_URI'] = 'mongodb://harsha:3492%40ubuntu@localhost:27017/'
+# allow query string jwt token
+app.config['JWT_TOKEN_LOCATION'] = ['query_string', 'headers']
+jwt = JWTManager(app)
 client = pymongo.MongoClient("mongodb://harsha:3492%40ubuntu@localhost:27017/")
+db = client['dfs']
 
-# client = pymongo.MongoClient( "mongodb+srv://harsha:harsha@cluster0.pb6ox.mongodb.net/dfs?retryWrites=true&w=majority")
+mail_settings = {
+    "MAIL_SERVER": 'smtp.gmail.com',
+    "MAIL_PORT": 465,
+    "MAIL_USE_TLS": False,
+    "MAIL_USE_SSL": True,
+    "MAIL_USERNAME": 'icecream.app.dev@gmail.com',
+    "MAIL_PASSWORD": 'app.dev@gmail',
+    # default sender
+    "MAIL_DEFAULT_SENDER": 'Dev App <icecream.app.dev@gmail.com>'
+}
 
-# client = pymongo.MongoClient("mongodb://dfs:dfs@mongodb:27017/")
+app.config.update(mail_settings)
 
-# use MONGODB_CONNSTRING
-# client = pymongo.MongoClient(os.environ['MONGODB_CONNSTRING'])
+mail = Mail(app)
 
-try:
-    db = client.dfs
-except:
-    print("Error: Could not connect to MongoDB")
+SIGNALS = {
+    'BAD_REQUEST': 400,
+    'UNAUTHORIZED': 401,
+    'FORBIDDEN': 403,
+    'NOT_FOUND': 404,
+    'METHOD_NOT_ALLOWED': 405,
+    'NOT_ACCEPTABLE': 406,
+    'REQUEST_TIMEOUT': 408,
+    'CONFLICT': 409,
+    'GONE': 410,
+    'OK': 200,
+}
 
-print("Connected to MongoDB")
+USER_TYPES = {
+    'SUPER_ADMIN': 0,
+    'ADMIN': 1,
+    'DOCTOR': 2,
+    'PATIENT': 3,
+}
 
-users = db.users
-
-
-@app.errorhandler(404)
-def page_not_found(e):
-    return jsonify({'status': 'fail', 'message': 'no such resource'}), 404
-
-
-def decode_jwt_token(token):
-    try:
-        payload = jwt.decode(token, app.secret_key, algorithms=['HS256'])
-        return payload, 200
-    except jwt.ExpiredSignatureError:
-        return "Signature expired. Please log in again.", 401
-    except jwt.InvalidTokenError or jwt.InvalidSignatureError or jwt.DecodeError:
-        return "Invalid token. Please log in again.", 401
-
-
-def encode_jwt_token(user_id):
-    import datetime
-    try:
-        payload = {
-            'exp': datetime.datetime.utcnow() + datetime.timedelta(days=0, minutes=15),
-            'iat': datetime.datetime.utcnow(),
-            'sub': user_id,
-        }
-        return jwt.encode(payload, app.secret_key, algorithm='HS256'), 200
-    except jwt.ExpiredSignatureError:
-        return "Signature expired. Please log in again.", 401
-    except (jwt.InvalidTokenError or jwt.InvalidSignatureError or jwt.DecodeError) as e:
-        return "Invalid token. Please log in again.", 401
+# helper functions :-----------------------------------------------------
 
 
-def token_required(f):
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        token = request.args.get('token')
-        if not token:
-            return jsonify({'status': 'fail', 'message': 'Token is missing!'}), 401
+def send_async_email(app, msg):
+    with app.app_context():
         try:
-            payload = decode_jwt_token(token)
-            if payload[1] == 200:
-                return f(*args, **kwargs)
-            return jsonify({'status': 'fail', 'message': payload[0]}), 401
+            mail.send(msg)
         except Exception as e:
-            return jsonify({'status': 'fail', 'message': 'Token is invalid!'}), 401
-    return decorated
+            print(e)
 
 
-@app.route('/', methods=['GET', 'POST'])
-def ret():
-    # return provided data
-    if request.method == 'POST':
-        return {'status': 'success', 'message': 'hi!', 'data': request.form}, 200
-    return jsonify({'status': 'success', 'message': 'hi!'}), 200
+def send_reset_email(user):
+    # create a reset token
+    reset_token = create_access_token(
+        identity=user, expires_delta=timedelta(minutes=30), fresh=True)
+    msg = Message('Password Reset', recipients=[
+                  user], body="You can reset your password using this link: http://localhost:3000/resetpassword?jwt=" + reset_token)
+    Thread(target=send_async_email, args=(app, msg)).start()
+    pass
 
 
-@app.route('/users/login', methods=['POST'])
-def login():
-    data = request.get_json()
-    print("data: ", data)
-    username = data['username']
-    password = data['password']
-    try:
-        user = users.find_one({'username': username})
-
-        if user:
-            # check if password is correct
-            if bcrypt.checkpw(password.encode('utf-8'), user['password']):
-                auth_token = encode_jwt_token(str(user['_id']))
-                if auth_token[1] == 200:
-                    return {'status': 'success', 'message': 'Welcome {}!'.format(user['username']), 'token': str(auth_token[0].decode('utf-8')), 'user': {'username': user['username'], 'role': user['role']}}, 200
-                return {'status': 'fail', 'message': auth_token}, 401
-            else:
-                return {'status': 'fail', 'message': 'Incorrect password'}, 401
-        else:
-            return {'message': 'User not found'}, 404
-    except Exception as e:
-        return {'status': 'error', 'message': str(e)}, 500
+def send_password_update_email(user):
+    msg = Message('Password Update', recipients=[user], body="Your password has been updated",
+                  )
+    Thread(target=send_async_email, args=(app, msg)).start()
+    pass
 
 
-@app.route('/users/register', methods=['POST'])
+# routes :---------------------------------------------------------------------------------------------------------
+
+# Register a callback function that takes whatever object is passed in as the
+# identity when creating JWTs and converts it to a JSON serializable format
+
+
+@jwt.user_identity_loader
+def user_identity_lookup(user):
+    print("user", user)
+    return user
+
+# Register a callback function that loads a user from your database whenever
+# a protected route is accessed. This should return any python object on a
+# successful lookup, or None if the lookup failed for any reason (for example
+# if the user has been deleted from the database).
+
+
+@jwt.user_lookup_loader
+def user_lookup_callback(_jwt_header, jwt_data):
+    email = jwt_data['sub']
+    return db.users.find_one({"email": email})
+
+
+# ---------------------------------------------------------------------------------------------------------------------
+
+# We are using the `refresh=True` options in jwt_required to only allow
+# refresh tokens to access this route.
+@app.route('/refresh', methods=['POST'])
+@jwt_required(refresh=True)
+def refresh():
+    identity = get_jwt_identity()
+    access_token = create_access_token(identity=identity)
+    return jsonify(access_token=access_token)
+
+
+@ app.route("/dashboard", methods=['GET'])
+@ jwt_required()
+def dashboard():
+    return jsonify({"message": "Welcome to the dashboard", "user": current_user.get('username')}), SIGNALS['OK']
+
+
+@ app.route("/register", methods=['POST'])
 def register():
-    data = request.get_json()
-    print("data: ", data)
-    username = data['username']
-    password = data['password']
-    email = data['email']
-    role = data['role']
-    # check role
-    #
+    print("register")
+    if request.method == 'POST':
+        if request.is_json:
+            email = request.json['email']
+        else:
+            email = request.form['email']
 
-    # check if user already exists
-    user = users.find_one({'username': username})
-    if user:
-        return {'status': 'fail', 'message': 'User already exists'}, 409
-    email_user = users.find_one({'email': email})
-    if email_user:
-        return {'status': 'fail', 'message': 'Email already exists'}, 409
-    if role not in ROLES:
-        return {'status': 'fail', 'message': 'Invalid role'}, 409
-    hashed_passwd = bcrypt.hashpw(
-        password.encode('utf-8'), bcrypt.gensalt())
+    user_exists = db.users.find_one({"email": email})
+    print("user_exists", user_exists)
+    if user_exists:
+        return jsonify({"message": "User already exists"}), SIGNALS['CONFLICT']
+    else:
+        if request.is_json:
+            username = request.json['username']
+            password = request.json['password']
+            usertype = request.json['usertype']
+        else:
+            username = request.form['username']
+            password = request.form['password']
+            usertype = request.form['usertype']
+        # encrypt password
+
+        hashed_password = bcrypt.hashpw(
+            password.encode('utf-8'), bcrypt.gensalt())
+        user_data = {"email": email, "username": username,
+                     "password": hashed_password, "usertype": usertype}
+        try:
+            db.users.insert_one(user_data)
+            return jsonify({"message": "User created successfully"}), SIGNALS['OK']
+        except Exception as e:
+            print("Exception registering new user {}:{}").format(user_data, e)
+            return jsonify({"message": "Error creating user"}), SIGNALS['CONFLICT']
+
+
+@ app.route("/login", methods=['POST'])
+def login():
+    if request.method == 'POST':
+        if request.is_json:
+            email = request.json['email']
+            password = request.json['password']
+        else:
+            email = request.form['email']
+            password = request.form['password']
+
+    user_exists = db.users.find_one({"email": email})
+    if user_exists:
+        if bcrypt.checkpw(password.encode('utf-8'), user_exists['password']):
+            access_token = create_access_token(
+                identity=email, )
+            refresh_token = create_refresh_token(
+                identity=email)
+            response = jsonify({"message": "Login successful",
+                                "user": json_util.dumps(user_exists), "access_token": access_token, "refresh_token": refresh_token}), SIGNALS['OK']
+            # add user info to the response
+            return response
+        else:
+            return jsonify({"message": "Incorrect password"}), SIGNALS['UNAUTHORIZED']
+    else:
+        return jsonify({"message": "User does not exist"}), SIGNALS['NOT_FOUND']
+
+
+@ app.route("/forgotpassword", methods=['POST'])
+def forgot_password():
+    if request.method == 'POST':
+        if request.is_json:
+            email = request.json['email']
+        else:
+            email = request.form['email']
+    user_exists = db.users.find_one({"email": email})
+    if user_exists:
+        send_reset_email(user_exists['email'])
+    return jsonify({"message": "Password reset link sent to your email"}), SIGNALS['OK']
+
+
+@ app.route("/resetpassword", methods=['POST'])
+@jwt_required(fresh=True, locations=['query_string'])
+def reset_password():
+    # get token from query params
+    password = request.args.get('password')
+    # verify token
     try:
-        user_input = {
-            'username': username,
-            'password': hashed_passwd,
-            'email': email,
-            'role': role,
-        }
-        users.insert_one(user_input)
-        if users.find_one({'username': username}):
-            return {'status': 'success', 'message': 'User registered successfully'}, 200
-        return {'status': 'fail', 'message': 'User not registered'}, 500
+        # email = jwt.decode(token, app.config['SECRET_KEY'])
+        # get identity from token using flask_jwt_extended
+        email = get_jwt_identity()
     except:
-        return {'status': 'fail', 'message': 'User not registered'}, 500
-    return {'status': 'fail', 'message': 'User not registered'}, 500
+        return jsonify({"message": "Invalid or expired token"}), SIGNALS['UNAUTHORIZED']
+    # get user from db
+    user_exists = db.users.find_one({"email": email})
+    if user_exists:
+        # update user password
+        hashed_password = bcrypt.hashpw(
+            password.encode('utf-8'), bcrypt.gensalt())
+        # check if previous password matches
+        if bcrypt.checkpw(password.encode('utf-8'), user_exists['password']):
+            return jsonify({"message": "You cannot use your previous password"}), SIGNALS['CONFLICT']
+        db.users.update_one({"email": email}, {
+                            "$set": {"password": hashed_password}})
+        send_password_update_email(user_exists['email'])
+        return jsonify({"message": "Password reset successful"}), SIGNALS['OK']
+    else:
+        return jsonify({"message": "User does not exist"}), SIGNALS['NOT_FOUND']
 
 
-@app.route('/logout')
+@app.route("/logout", methods=['POST'])
 def logout():
-    # remove session variable
-    # session.pop('username', None)
-    # session.pop('email', None)
-    return jsonify({'message': 'Success'})
+    response = jsonify({"msg": "logout successful"})
+    return response, SIGNALS['OK']
 
 
-if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
+if __name__ == "__main__":
+    import os
+    port = int(os.environ.get("PORT", 5000))
     app.run(debug=True, port=port)

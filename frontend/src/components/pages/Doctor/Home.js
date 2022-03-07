@@ -20,13 +20,14 @@ import axios from "axios";
 
 export const theme = createTheme();
 
-export default function AdminPage() {
+export function Home() {
+  const [user, setUser] = React.useState([]);
   useEffect(() => {
-    if (!localStorage.getItem("token")) window.location.href = "/login";
-    if (localStorage.getItem("role") !== "ADMIN") {
-      localStorage.clear();
-      window.location.href = "/";
-    }
+    if (!localStorage.getItem("user")) window.location.href = "/";
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (user.usertype !== 2) window.location.href = "/";
+    setUser(user);
+    console.log("user", user);
   }, []);
 
   return (
@@ -40,7 +41,7 @@ export default function AdminPage() {
           }}
         >
           <Typography component="h1" variant="h5">
-            Welcome to your dashboard, {localStorage.getItem("username")} !
+            Welcome to your dashboard, {user.username} !
           </Typography>
         </Box>
         <Box
@@ -50,7 +51,7 @@ export default function AdminPage() {
           }}
         >
           <Typography component="h1" variant="h5">
-            You are logged in as an admin
+            You are logged in as a doctor.
           </Typography>
         </Box>
       </Container>

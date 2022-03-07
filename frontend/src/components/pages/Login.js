@@ -14,12 +14,11 @@ import { createTheme, ThemeProvider } from "@mui/material/styles";
 import Context from "@mui/base/TabsUnstyled/TabsContext";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import Select from "@mui/material/Select";
-import MenuItem from "@mui/material/MenuItem";
 import axios from "axios";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
 
 import { notify } from "../templates/Toast";
-
+import { Input, IconButton, InputAdornment } from "@mui/material";
 const theme = createTheme();
 
 export default function Login() {
@@ -33,33 +32,47 @@ export default function Login() {
     setError,
   } = useForm();
 
+  const [showPassword, setShowPassword] = React.useState(false);
+
+  const handleClickShowPassword = () => {
+    setShowPassword(!showPassword);
+  };
+
   const onSubmit = (data) => {
     //    send data as form data
     console.log(data);
 
     axios
-      .post("http://localhost:5000/users/login", data)
+      .post("http://localhost:5000/login", data, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
       .then((res) => {
         console.log("Login Success", res);
         notify(res.data.message, "success");
-        localStorage.setItem("token", res.data.token);
+        localStorage.setItem("access_token", res.data.access_token);
+        localStorage.setItem("refresh_token", res.data.refresh_token);
         localStorage.setItem("user", res.data.user);
-        localStorage.setItem("username", res.data.user.username);
-        localStorage.setItem("role", res.data.user.role);
-
         setTimeout(() => {
-          const role = res.data.user.role;
-          console.log("role", role);
-          if (role === "DOCTOR") {
-            window.location.href = "/doctor";
-          }
-          if (role === "PATIENT") {
-            window.location.href = "/patient";
-          }
-          if (role === "ADMIN") {
+          const user = JSON.parse(localStorage.getItem("user"));
+          console.log(user);
+
+          if (user.usertype === 0 || user.usertype === 1) {
+            // super_admin
+            console.log("admin");
             window.location.href = "/admin";
+          } else if (user.usertype === 2) {
+            // doctor
+            console.log("doctor");
+            window.location.href = "/doctor";
+          } else if (user.usertype === 3) {
+            // patient
+            console.log("patient");
+            window.location.href = "/patient";
           } else {
-            window.location.href = "/login";
+            console.log("others");
+            notify("Invalid user type", "error");
           }
         }, 2000);
       })
@@ -70,18 +83,14 @@ export default function Login() {
   };
 
   useEffect(() => {
-    // if token is present, redirect to home page
-    if (localStorage.getItem("token")) {
-      const role = localStorage.getItem("role");
-      if (!role) window.location.href = "/login";
-      if (role === "DOCTOR") {
-        window.location.href = "/doctor";
-      }
-      if (role === "PATIENT") {
-        window.location.href = "/patient";
-      }
-      if (role === "ADMIN") {
+    if (localStorage.getItem("user")) {
+      const user = JSON.parse(localStorage.getItem("user"));
+      if (user.usertype === 0 || user.usertype === 1) {
         window.location.href = "/admin";
+      } else if (user.usertype === 2) {
+        window.location.href = "/doctor";
+      } else if (user.usertype === 3) {
+        window.location.href = "/patient";
       } else {
         window.location.href = "/login";
       }
@@ -119,29 +128,50 @@ export default function Login() {
               variant="outlined"
               margin="normal"
               fullWidth
-              id="username"
-              label="Username"
-              {...register("username", {
+              id="email"
+              label="Email"
+              {...register("email", {
                 required: true,
+                validate: {
+                  email: (value) =>
+                    /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(value) ||
+                    "Invalid email address",
+                },
               })}
-              helperText={formState.errors.username?.message}
-              error={formState.errors.username ? true : false}
-              autoComplete="username"
+              helperText={formState.errors.email?.message}
+              error={formState.errors.email ? true : false}
+              autoComplete="email"
             />
+
             <TextField
               variant="outlined"
               margin="normal"
               fullWidth
               label="Password"
-              type="password"
+              type={showPassword ? "text" : "password"}
               id="password"
+              // show hidden icon
               {...register("password", {
                 required: true,
               })}
               helperText={formState.errors.password?.message}
               error={formState.errors.password ? true : false}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label="toggle password visibility"
+                      onClick={handleClickShowPassword}
+                      edge="end"
+                    >
+                      {showPassword ? <Visibility /> : <VisibilityOff />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
             />
-            <FormControlLabel
+
+            {/* <FormControlLabel
               control={
                 <Checkbox
                   value="remember"
@@ -150,7 +180,7 @@ export default function Login() {
                 />
               }
               label="Remember me"
-            />
+            /> */}
 
             <Button
               type="submit"

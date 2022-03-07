@@ -15,37 +15,61 @@ import Context from "@mui/base/TabsUnstyled/TabsContext";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import axios from "axios";
-import { Navigate } from "react-router-dom";
-import { FormGroup, FormLabel } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
+
 import { notify } from "../templates/Toast";
 import { Input, IconButton, InputAdornment } from "@mui/material";
-import Select from "@mui/material/Select";
-import MenuItem from "@mui/material/MenuItem";
 const theme = createTheme();
 
-export default function Register() {
-  const { register, control, handleSubmit, formState, clearErrors, getValues } =
-    useForm({});
+export default function ForgotPassword() {
+  const {
+    register,
+    control,
+    handleSubmit,
+    formState,
+    clearErrors,
+    getValues,
+    setError,
+  } = useForm();
 
   const [showPassword, setShowPassword] = React.useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
-  const [userType, setUserType] = React.useState("");
-  const onSubmit = (data) => {
-    console.log(data);
 
+  const handleClickShowPassword = () => {
+    setShowPassword(!showPassword);
+  };
+
+  const handleClickShowConfirmPassword = () => {
+    setShowConfirmPassword(!showConfirmPassword);
+  };
+
+  const onSubmit = (data) => {
+    //    send data as form data
+    console.log(data);
+    const password = data.password;
+    // get query params
+    const query = new URLSearchParams(window.location.search);
+    const jwt = query.get("jwt");
+    // send jwt as query params
     axios
-      .post("http://localhost:5000/register", data)
+      .post("http://localhost:5000/resetpassword", null, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        params: {
+          jwt,
+          password,
+        },
+      })
       .then((res) => {
-        console.log(res);
-        // redirect to login page
-        toast.success(res.data.message);
+        notify(res.data.message, "success");
         setTimeout(() => {
           window.location.href = "/login";
         }, 2000);
       })
       .catch((err) => {
-        toast.error(err.response.data.message);
+        console.log("Error", err);
+        notify(err.response.data.message, "error");
       });
   };
 
@@ -73,83 +97,14 @@ export default function Register() {
             pauseOnHover
           />
           <Typography component="h1" variant="h5">
-            Sign up
+            Set new password
           </Typography>
           <form onSubmit={handleSubmit(onSubmit)}>
             <TextField
               variant="outlined"
               margin="normal"
               fullWidth
-              id="username"
-              label="Username"
-              {...register("username", {
-                required: true,
-                validate: {
-                  length: (value) =>
-                    value.length > 3 || "Must be at least 3 characters",
-                },
-              })}
-              helperText={formState.errors.username?.message}
-              error={formState.errors.username ? true : false}
-              autoComplete="username"
-            />
-            <TextField
-              variant="outlined"
-              margin="normal"
-              fullWidth
-              id="email"
-              label="Email Address"
-              {...register("email", {
-                required: true,
-                validate: {
-                  email: (value) =>
-                    /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(value) ||
-                    "Invalid email address",
-                  length: (value) =>
-                    value.length > 3 || "Must be at least 3 characters",
-                },
-              })}
-              helperText={formState.errors.email?.message}
-              error={formState.errors.email ? true : false}
-              autoComplete="email"
-            />
-            <Select
-              variant="outlined"
-              fullWidth
-              id="role"
-              label="Role"
-              defaultValue={""}
-              value={userType}
-              {...register("usertype", {
-                required: true,
-                validate: {
-                  notEmpty: (value) => value !== "" || "Please select a role",
-                },
-              })}
-              onChange={(e) => setUserType(e.target.value)}
-              error={formState.errors.role ? true : false}
-            >
-              <MenuItem value=""> </MenuItem>
-              <MenuItem value={0}>Super Admin</MenuItem>
-              <MenuItem value={1}>Admin</MenuItem>
-              <MenuItem value={2}>Doctor</MenuItem>
-              <MenuItem value={3}>Patient</MenuItem>
-            </Select>
-            {formState.errors.usertype ? (
-              <p
-                style={{
-                  // red
-                  color: "red",
-                }}
-              >
-                {formState.errors.usertype.message}
-              </p>
-            ) : null}
-            <TextField
-              variant="outlined"
-              margin="normal"
-              fullWidth
-              label="Password"
+              label="New password"
               type={showPassword ? "text" : "password"}
               id="password"
               {...register("password", {
@@ -180,7 +135,7 @@ export default function Register() {
               variant="outlined"
               margin="normal"
               fullWidth
-              label="Confirm Password"
+              label="Confirm new password"
               type={showConfirmPassword ? "text" : "password"}
               id="confirmPassword"
               {...register("confirmPassword", {
@@ -221,21 +176,11 @@ export default function Register() {
                 formState.isSubmitting || formState.isValidating ? true : false
               }
             >
-              Sign Up
+              {formState.isSubmitting || formState.isValidating
+                ? "Loading..."
+                : "Set new Password"}
             </Button>
           </form>
-          <Grid container>
-            <Grid item xs>
-              <Link href="/forgot_password" variant="body2">
-                Forgot password?
-              </Link>
-            </Grid>
-            <Grid item>
-              <Link href="/login" variant="body2">
-                Sign In
-              </Link>
-            </Grid>
-          </Grid>
         </Box>
       </Container>
     </ThemeProvider>
