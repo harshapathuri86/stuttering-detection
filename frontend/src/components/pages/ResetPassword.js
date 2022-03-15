@@ -52,7 +52,7 @@ export default function ForgotPassword() {
     const jwt = query.get("jwt");
     // send jwt as query params
     axios
-      .post("http://localhost:5000/resetpassword", null, {
+      .post("http://localhost:8000/resetpassword", null, {
         headers: {
           "Content-Type": "application/json",
         },
