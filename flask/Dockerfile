@@ -15,6 +15,6 @@ RUN adduser --uid $USER_ID --gid $GROUP_ID --disabled-password www --shell /bin/
 
 USER www
 
-EXPOSE 8000
+EXPOSE 5000
 
 ENTRYPOINT ["sh","./gunicorn.sh"]

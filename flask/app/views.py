@@ -5,6 +5,7 @@ import bcrypt
 import pymongo
 from flask_jwt_extended import JWTManager, jwt_required, create_access_token, get_jwt_identity, get_current_user, current_user, get_jwt, create_refresh_token
 from pymongo import MongoClient
+from bson.objectid import ObjectId
 from datetime import datetime, timedelta, timezone
 from flask_mail import Mail, Message
 from threading import Thread
@@ -12,14 +13,13 @@ from bson import json_util
 import os
 
 CORS(app, supports_credentials=True, origins='*')
-# app.config["MONGO_URI"] = 'mongodb://' + os.environ['MONGODB_USERNAME'] + ':' + \
-# os.environ['MONGODB_PASSWORD'] + '@' + \
-# os.environ['MONGODB_HOSTNAME'] + ':27017' + \
-# '/'+os.environ['MONGODB_DATABASE']
+# while running docker compose
+app.config["MONGO_URI"] = 'mongodb://' + os.environ['MONGODB_USERNAME'] + ':' + \
+    os.environ['MONGODB_PASSWORD'] + '@' + \
+    os.environ['MONGODB_HOSTNAME'] + ':27017'
 
-app.config["MONGO_URI"] = 'mongodb://flaskuser:flaskpassword@mongodb:27017'
-# app.config["MONGO_URI"] = 'mongodb://flaskuser:flaskpassword@localhost:27017'
-
+# while developing
+# app.config['MONGO_URI'] = 'mongodb://flaskuser:flaskpassword@localhost:27017'
 
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=1)
 app.config["JWT_REFRESH_TOKEN_EXPIRES"] = timedelta(days=30)
@@ -62,8 +62,8 @@ SIGNALS = {
 }
 
 USER_TYPES = {
-    'SUPER_ADMIN': 0,
-    'ADMIN': 1,
+    'SUPER_ADMIN': 0,  # complete edit access
+    'ADMIN': 1,  # complete view access
     'DOCTOR': 2,
     'PATIENT': 3,
 }
@@ -253,7 +253,24 @@ def index():
     return {"message": "Welcome to the Dockerized Flask MongoDB API!"}, SIGNALS['OK']
 
 
-# if __name__ == "__main__":
-#     ENVIRONMENT_DEBUG = os.environ.get("APP_DEBUG", True)
-#     ENVIRONMENT_PORT = os.environ.get("APP_PORT", 5000)
-#     app.run(host='0.0.0.0', port=ENVIRONMENT_PORT, debug=ENVIRONMENT_DEBUG)
+# TESTS
+@app.route("/test", methods=['GET', 'POST'])
+@jwt_required()
+def test():
+    if request.method == 'POST':
+        if request.is_json:
+            data = request.json
+        else:
+            data = request.form
+        print(data)
+        return jsonify({"test_data": data}), SIGNALS['OK']
+    else:
+        doctor_email = request.args.get('doctor')
+        patient_email = request.args.get('patient')
+        if doctor_email:
+            tests = db.tests.find({"doctor": doctor_email})
+        elif patient_email:
+            tests = db.tests.find({"patient": patient_email})
+        else:
+            tests = db.tests.find()
+        return jsonify({"tests": json_util.dumps(tests)}), SIGNALS['OK']
