@@ -17,7 +17,6 @@ import "react-toastify/dist/ReactToastify.css";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import axios from "axios";
-
 export const theme = createTheme();
 
 export function Home() {
@@ -53,6 +52,22 @@ export function Home() {
           <Typography component="h1" variant="h5">
             You are logged in as a doctor.
           </Typography>
+        </Box>
+        {/* button */}
+        <Box
+          sx={{
+            marginTop: 8,
+            display: "flex",
+            flexDirection: "row",
+          }}
+        >
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => (window.location.href = "/newtest")}
+          >
+            New Test
+          </Button>
         </Box>
       </Container>
     </ThemeProvider>

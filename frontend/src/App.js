@@ -9,6 +9,7 @@ import { Home as PatientHome } from "./components/pages/Patient/Home";
 import ForgotPassword from "./components/pages/ForgotPassword";
 import ResetPassword from "./components/pages/ResetPassword";
 import Profile from "./components/pages/Profile";
+import NewTest from "./components/pages/Doctor/NewTest";
 import Navbar from "./components/templates/Navbar";
 
 function App() {
@@ -26,6 +27,7 @@ function App() {
           <Route path="/forgotpassword" element={<ForgotPassword />} />
           <Route path="/resetpassword/" element={<ResetPassword />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/newtest" element={<NewTest />} />
         </Routes>
       </Router>
     </div>
