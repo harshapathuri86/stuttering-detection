@@ -254,26 +254,26 @@ def index():
 
 
 # TESTS
-@app.route("/test", methods=['GET', 'POST'])
-@jwt_required()
-def test():
-    if request.method == 'POST':
-        if request.is_json:
-            data = request.json
-        else:
-            data = request.form
-        print(data)
-        return jsonify({"test_data": data}), SIGNALS['OK']
-    else:
-        doctor_email = request.args.get('doctor')
-        patient_email = request.args.get('patient')
-        if doctor_email:
-            tests = db.tests.find({"doctor": doctor_email})
-        elif patient_email:
-            tests = db.tests.find({"patient": patient_email})
-        else:
-            tests = db.tests.find()
-        return jsonify({"tests": json_util.dumps(tests)}), SIGNALS['OK']
+# @app.route("/dummytest", methods=['GET', 'POST'])
+# @jwt_required()
+# def test():
+#     if request.method == 'POST':
+#         if request.is_json:
+#             data = request.json
+#         else:
+#             data = request.form
+#         print(data)
+#         return jsonify({"test_data": data}), SIGNALS['OK']
+#     else:
+#         doctor_email = request.args.get('doctor')
+#         patient_email = request.args.get('patient')
+#         if doctor_email:
+#             tests = db.tests.find({"doctor": doctor_email})
+#         elif patient_email:
+#             tests = db.tests.find({"patient": patient_email})
+#         else:
+#             tests = db.tests.find()
+#         return jsonify({"tests": json_util.dumps(tests)}), SIGNALS['OK']
 
 
 @app.route("/question", methods=['GET', 'POST'])
@@ -362,3 +362,36 @@ def getPassage():
         except Exception as e:
             print(e)
             return jsonify({"message": "Error getting passage"}), SIGNALS['NOT_FOUND']
+
+
+@app.route('/newtest', methods=['GET', 'POST'])
+@jwt_required()
+def newTest():
+    if request.method == 'POST':
+        if request.is_json:
+            data = request.json
+        else:
+            data = request.form
+
+        try:
+            new_test = data['test']
+        except KeyError:
+            return jsonify({"message": "No test found"}), SIGNALS['NOT_FOUND']
+
+        # insert new test into db
+        try:
+            db.tests.insert_one({'test': new_test})
+            return jsonify({"message": "Test added successfully"}), SIGNALS['OK']
+        except Exception as e:
+            print("Exception adding new test {}:{}").format(new_test, e)
+            return jsonify({"message": "Error adding test"}), SIGNALS['CONFLICT']
+
+    else:
+        user = get_jwt_identity()
+        if user['role'] == 'doctor':
+            tests = db.tests.find({"doctor": user['email']})
+        elif user['role'] == 'patient':
+            tests = db.tests.find({"patient": user['email']})
+        else:
+            tests = db.tests.find()
+        return jsonify({"tests": json_util.dumps(tests)}), SIGNALS['OK']
