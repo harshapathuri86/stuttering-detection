@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 import Button from "@mui/material/Button";
 import CssBaseline from "@mui/material/CssBaseline";
@@ -20,7 +20,7 @@ import axios from "axios";
 import UserDetails from "./testcomponents/UserDetails";
 import ReadSentence from "./testcomponents/ReadSentence.js";
 import ReadPassage from "./testcomponents/ReadPassage";
-
+import TestCountInput from "./testcomponents/testInput";
 export const theme = createTheme();
 
 export default function NewTest() {
@@ -39,20 +39,81 @@ export default function NewTest() {
     duration: "",
     nature: "",
     history: "",
-    audio1: "",
-    audio2: "",
-    audio3: "",
+    questions: [],
+    passages: [],
   });
 
   const [step, setStep] = React.useState(1);
 
   const nextStep = () => {
     if (step < 3) setStep(step + 1);
-    else console.log("You are at the end of the form", values);
+    else {
+      console.log("You are at the end of the form");
+      submitTest();
+      // TODO: submit test to server
+    }
+  };
+
+  const submitTest = () => {
+    console.log("submitTest", values);
+    // TODO:
+    // verify demographic data
+    // verify that all questions/passages are filled
+    // remove unfinished questions/passages
+    // send to server
+    // notify user of success
   };
 
   const prevStep = () => {
     if (step > 1) setStep(step - 1);
+  };
+
+  const addQuestions = (questions) => {
+    setValues({ ...values, questions: questions });
+  };
+
+  const deleteQuestion = (question) => {
+    let ques = values.questions.filter((q) => q.id !== question.id);
+    setValues({ ...values, questions: ques });
+  };
+
+  const addQuestion = (question) => {
+    setValues({ ...values, questions: [...values.questions, question] });
+  };
+
+  const updateQuestion = (question) => {
+    let ques = values.questions.map((q) => {
+      if (q.id === question.id) {
+        return question;
+      } else {
+        return q;
+      }
+    });
+    setValues({ ...values, questions: ques });
+  };
+
+  const addPassages = (passages) => {
+    setValues({ ...values, passages: passages });
+  };
+
+  const addPassage = (passage) => {
+    setValues({ ...values, passages: [...values.passages, passage] });
+  };
+
+  const updatePassage = (passage) => {
+    let pass = values.passages.map((q) => {
+      if (q.id === passage.id) {
+        return passage;
+      } else {
+        return q;
+      }
+    });
+    setValues({ ...values, passages: pass });
+  };
+
+  const deletePassage = (passage) => {
+    let pass = values.passages.filter((p) => p.id !== passage.id);
+    setValues({ ...values, passages: pass });
   };
 
   const handleChange = (input) => (e) => {
@@ -60,35 +121,16 @@ export default function NewTest() {
     setValues({ ...values, [input]: e.target.value });
   };
 
-  console.log("values", values);
-
   return (
     <ThemeProvider theme={theme}>
       <Container component="main">
         <CssBaseline />
-        {/* button */}
-        {/* <Box
-          sx={{
-            marginTop: 8,
-            display: "flex",
-          }}
-        >
-          <Button color="primary" variant="contained" onClick={nextStep}>
-            Continue
-          </Button>
-        </Box> */}
-        {/* form */}
         <Box
           sx={{
             marginTop: 8,
             display: "flex",
           }}
         >
-          {/* <UserDetails
-            nextStep={nextStep}
-            handleChange={handleChange}
-            values={values}
-          /> */}
           {step === 1 && (
             <UserDetails
               nextStep={nextStep}
@@ -101,16 +143,22 @@ export default function NewTest() {
             <ReadSentence
               nextStep={nextStep}
               prevStep={prevStep}
-              handleChange={handleChange}
-              values={values}
+              addQuestions={addQuestions}
+              addQuestion={addQuestion}
+              deleteQuestion={deleteQuestion}
+              updateQuestion={updateQuestion}
+              questions={values.questions}
             />
           )}
           {step === 3 && (
             <ReadPassage
               nextStep={nextStep}
               prevStep={prevStep}
-              handleChange={handleChange}
-              values={values}
+              addPassages={addPassages}
+              addPassage={addPassage}
+              deletePassage={deletePassage}
+              updatePassage={updatePassage}
+              passages={values.passages}
             />
           )}
         </Box>

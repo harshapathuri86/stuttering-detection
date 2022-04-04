@@ -14,12 +14,12 @@ import os
 
 CORS(app, supports_credentials=True, origins='*')
 # while running docker compose
-app.config["MONGO_URI"] = 'mongodb://' + os.environ['MONGODB_USERNAME'] + ':' + \
-    os.environ['MONGODB_PASSWORD'] + '@' + \
-    os.environ['MONGODB_HOSTNAME'] + ':27017'
+# app.config["MONGO_URI"] = 'mongodb://' + os.environ['MONGODB_USERNAME'] + ':' + \
+#     os.environ['MONGODB_PASSWORD'] + '@' + \
+#     os.environ['MONGODB_HOSTNAME'] + ':27017'
 
 # while developing
-# app.config['MONGO_URI'] = 'mongodb://flaskuser:flaskpassword@localhost:27017'
+app.config['MONGO_URI'] = 'mongodb://flaskuser:flaskpassword@localhost:27017'
 
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=1)
 app.config["JWT_REFRESH_TOKEN_EXPIRES"] = timedelta(days=30)
@@ -274,3 +274,91 @@ def test():
         else:
             tests = db.tests.find()
         return jsonify({"tests": json_util.dumps(tests)}), SIGNALS['OK']
+
+
+@app.route("/question", methods=['GET', 'POST'])
+# @jwt_required()
+def getQuestion():
+    # query params
+    if request.method == 'POST':
+        if request.is_json:
+            data = request.json
+        else:
+            data = request.form
+
+        try:
+            new_question = data['question']
+        except KeyError:
+            return jsonify({"message": "No question found"}), SIGNALS['NOT_FOUND']
+
+        # insert new question into db
+        try:
+            db.questions.insert_one({'question': new_question})
+            return jsonify({"message": "Question added successfully"}), SIGNALS['OK']
+        except Exception as e:
+            print("Exception adding new question {}:{}").format(new_question, e)
+            return jsonify({"message": "Error adding question"}), SIGNALS['CONFLICT']
+
+    else:
+        # get list of ids seperated by commas as a string as a query param
+        ids = request.args.get('qids')
+        # convert string to list
+        if (ids is not None) and (ids != ""):
+            ids = ids.split(',')
+        else:
+            ids = []
+
+        # select a random question from the database without repeating questions and id not in ids
+        ids = [ObjectId(i) for i in ids]
+
+        try:
+            question = db.questions.aggregate(
+                [{'$sample': {'size': 1}}, {'$match': {'_id': {'$nin': ids}}}])
+            return jsonify({"question": json_util.dumps(question)}), SIGNALS['OK']
+        except Exception as e:
+            print(e)
+            return jsonify({"message": "Error getting question"}), SIGNALS['NOT_FOUND']
+
+
+@app.route("/passage", methods=['GET', 'POST'])
+# @jwt_required
+def getPassage():
+    # query params
+    if request.method == 'POST':
+        if request.is_json:
+            data = request.json
+        else:
+            data = request.form
+
+        try:
+            new_question = data['passage']
+        except KeyError:
+            return jsonify({"message": "No passage found"}), SIGNALS['NOT_FOUND']
+
+        # insert new question into db
+        try:
+            db.passages.insert_one({'passage': new_question})
+            return jsonify({"message": "Passage added successfully"}), SIGNALS['OK']
+        except Exception as e:
+            print("Exception adding new passage {}:{}").format(new_question, e)
+            return jsonify({"message": "Error adding passage"}), SIGNALS['CONFLICT']
+
+    else:
+        # get list of ids seperated by commas as a string as a query param
+        ids = request.args.get('pids')
+        # convert string to list
+        if (ids is not None) and (ids != ""):
+            ids = ids.split(',')
+        else:
+            ids = []
+
+        # select a random passage from the database without repeating passage and id not in ids
+        ids = [ObjectId(i) for i in ids]
+
+        try:
+            question = db.passages.aggregate(
+                [{'$sample': {'size': 1}}, {'$match': {'_id': {'$nin': ids}}}])
+            return jsonify({"passage": json_util.dumps(question)}), SIGNALS['OK']
+        except Exception as e:
+            print(e)
+            return jsonify({"message": "Error getting passage"}), SIGNALS['NOT_FOUND']
