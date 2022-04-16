@@ -21,6 +21,7 @@ import UserDetails from "./testcomponents/UserDetails";
 import ReadSentence from "./testcomponents/ReadSentence.js";
 import ReadPassage from "./testcomponents/ReadPassage";
 import TestCountInput from "./testcomponents/testInput";
+import { notify } from "../../templates/Toast";
 export const theme = createTheme();
 
 export default function NewTest() {
@@ -31,13 +32,13 @@ export default function NewTest() {
     gender: "",
     contact_number: "",
     email: "",
-    city: "",
-    state: "",
-    pincode: "",
+    // city: "",
+    // state: "",
+    // pincode: "",
     martial_status: "",
     occupation: "",
     duration: "",
-    nature: "",
+    // nature: "",
     history: "",
     questions: [],
     passages: [],
@@ -50,18 +51,83 @@ export default function NewTest() {
     else {
       console.log("You are at the end of the form");
       submitTest();
-      // TODO: submit test to server
     }
   };
 
   const submitTest = () => {
-    console.log("submitTest", values);
+    // console.log("submitTest", values);
     // TODO:
     // verify demographic data
-    // verify that all questions/passages are filled
     // remove unfinished questions/passages
-    // send to server
-    // notify user of success
+    for (let i = 0; i < values.questions.length; i++) {
+      if (values.questions[i].src === "") {
+        values.questions.splice(i, 1);
+        i--;
+      } else {
+        try {
+          let reader = new FileReader();
+          reader.readAsDataURL(values.questions[i].src);
+          reader.onloadend = function () {
+            values.questions[i].source = reader.result;
+          };
+        } catch (err) {
+          console.log(err);
+        }
+      }
+    }
+    if (values.questions.length === 0) {
+      notify("Please record at least one question", "error");
+      setStep(2);
+      return;
+    }
+    for (let i = 0; i < values.passages.length; i++) {
+      if (values.passages[i].src === "") {
+        values.passages.splice(i, 1);
+        i--;
+      } else {
+        try {
+          let reader = new FileReader();
+          reader.readAsDataURL(values.passages[i].src);
+          reader.onloadend = function () {
+            values.passages[i].source = reader.result;
+          };
+        } catch (err) {
+          console.log(err);
+        }
+      }
+    }
+    if (values.passages.length === 0) {
+      toast.error("Please record at least one passage");
+      setStep(3);
+      return;
+    }
+    console.log("submitTest", values);
+    axios
+      .post(
+        "http://localhost:5000/newtest",
+        {
+          test: values,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+          },
+        }
+      )
+      .then((res) => {
+        notify("Test created successfully", "success");
+        window.location.href = "/doctor";
+      })
+      // if conflict, notify user
+      // TODO: unable to catch the error in axios
+      .catch(function (err) {
+        console.log("err", err);
+        if (err.response.status === 409) {
+          notify("Test with same number already exists", "error");
+        } else {
+          notify("Error creating test", "error");
+        }
+      });
   };
 
   const prevStep = () => {
@@ -131,6 +197,17 @@ export default function NewTest() {
             display: "flex",
           }}
         >
+          <ToastContainer
+            position="bottom-center"
+            autoClose={5000}
+            hideProgressBar={true}
+            newestOnTop={false}
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
+          />
           {step === 1 && (
             <UserDetails
               nextStep={nextStep}

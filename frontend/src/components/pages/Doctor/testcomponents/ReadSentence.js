@@ -56,17 +56,22 @@ export default function ReadSentence({
           qids: idsString,
         },
         headers: {
-          Authorization: "Bearer " + token,
+          Authorization: `Bearer ${token}`,
+          // cors
+          "Access-Control-Allow-Origin": "*",
         },
       })
       .then((res) => {
+        console.log("res", res);
         let newQuestion = JSON.parse(res.data.question)[0];
-        const question = {
-          text: newQuestion.question,
-          src: "",
-          id: newQuestion._id.$oid,
-        };
-        addQuestion(question);
+        if (newQuestion) {
+          const question = {
+            text: newQuestion.question,
+            src: "",
+            id: newQuestion._id.$oid,
+          };
+          addQuestion(question);
+        }
       });
   };
 

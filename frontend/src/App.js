@@ -10,6 +10,7 @@ import ForgotPassword from "./components/pages/ForgotPassword";
 import ResetPassword from "./components/pages/ResetPassword";
 import Profile from "./components/pages/Profile";
 import NewTest from "./components/pages/Doctor/NewTest";
+import ViewTest from "./components/templates/ViewTest";
 import Navbar from "./components/templates/Navbar";
 
 function App() {
@@ -28,6 +29,7 @@ function App() {
           <Route path="/resetpassword/" element={<ResetPassword />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/newtest" element={<NewTest />} />
+          <Route path="/test/:id" element={<ViewTest />} />
         </Routes>
       </Router>
     </div>

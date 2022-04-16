@@ -17,6 +17,7 @@ import "react-toastify/dist/ReactToastify.css";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import axios from "axios";
+import { Card } from "@mui/material";
 export const theme = createTheme();
 
 export function Home() {
@@ -26,7 +27,6 @@ export function Home() {
     const user = JSON.parse(localStorage.getItem("user"));
     if (user.usertype !== 2) window.location.href = "/";
     setUser(user);
-    console.log("user", user);
   }, []);
 
   return (
@@ -70,6 +70,78 @@ export function Home() {
           </Button>
         </Box>
       </Container>
+      <Box
+        sx={{
+          marginTop: 8,
+          display: "flex",
+          flexDirection: "row",
+        }}
+      >
+        <TestList />
+      </Box>
     </ThemeProvider>
   );
 }
+
+export function TestList() {
+  const [tests, setTests] = React.useState([]);
+  useEffect(() => {
+    // console.log("token", localStorage.getItem("access_token"));
+    axios
+      .get("http://localhost:5000/tests", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+        },
+      })
+      .then((res) => {
+        // console.log("tests", res.data);
+        // console.log("tests", tests);
+        setTests(res.data.tests);
+        // convert string to array of objects
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }, []);
+
+  return (
+    <Container component="main" maxWidth="sm">
+      {/* <div> */}
+      {tests.map((test) => (
+        <TestCard key={test.id} test={test} />
+      ))}
+    </Container>
+    // </div>
+  );
+}
+
+const TestCard = ({ test }) => {
+  return (
+    <Card
+      sx={{
+        marginTop: 8,
+        display: "flex",
+        flexDirection: "row",
+      }}
+      onClick={() => (window.location.href = `/test/${test.id}`)}
+    >
+      {/* <Grid> */}
+      <Grid item xs={8}>
+        <Typography variant="h5" component="h2">
+          {test.case_number}
+        </Typography>
+      </Grid>
+      <Grid item xs={8}>
+        <Typography variant="body2" component="p">
+          {test.case_name}
+        </Typography>
+      </Grid>
+      <Grid item xs={8}>
+        <Typography variant="body2" component="p">
+          {test.date}
+        </Typography>
+      </Grid>
+    </Card>
+    // </Grid>
+  );
+};

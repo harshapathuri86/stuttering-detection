@@ -1,3 +1,4 @@
+from cgi import test
 from flask import Flask, request, jsonify
 from app import app
 from flask_cors import CORS
@@ -6,11 +7,14 @@ import pymongo
 from flask_jwt_extended import JWTManager, jwt_required, create_access_token, get_jwt_identity, get_current_user, current_user, get_jwt, create_refresh_token
 from pymongo import MongoClient
 from bson.objectid import ObjectId
+from bson.errors import InvalidId
 from datetime import datetime, timedelta, timezone
 from flask_mail import Mail, Message
 from threading import Thread
 from bson import json_util
 import os
+import random
+import numpy as np
 
 CORS(app, supports_credentials=True, origins='*')
 # while running docker compose
@@ -25,7 +29,7 @@ app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=1)
 app.config["JWT_REFRESH_TOKEN_EXPIRES"] = timedelta(days=30)
 app.config['JWT_SECRET_KEY'] = b'u\xefB@2\xc3\xdbU\xa2S T\xbe\xdc\xe2\xa9'
 # allow query string jwt token
-app.config['JWT_TOKEN_LOCATION'] = ['query_string', 'headers']
+app.config['JWT_TOKEN_LOCATION'] = ['headers', 'query_string']
 jwt = JWTManager(app)
 
 client = pymongo.MongoClient(app.config["MONGO_URI"])
@@ -59,6 +63,7 @@ SIGNALS = {
     'CONFLICT': 409,
     'GONE': 410,
     'OK': 200,
+    'INTERNAL_SERVER_ERROR': 500,
 }
 
 USER_TYPES = {
@@ -169,8 +174,8 @@ def register():
             db.users.insert_one(user_data)
             return jsonify({"message": "User created successfully"}), SIGNALS['OK']
         except Exception as e:
-            print("Exception registering new user {}:{}").format(user_data, e)
-            return jsonify({"message": "Error creating user"}), SIGNALS['CONFLICT']
+            print("Exception registering new user", user_data)
+            print("error", e)
 
 
 @ app.route("/login", methods=['POST'])
@@ -277,7 +282,7 @@ def index():
 
 
 @app.route("/question", methods=['GET', 'POST'])
-# @jwt_required()
+@jwt_required()
 def getQuestion():
     # query params
     if request.method == 'POST':
@@ -297,7 +302,6 @@ def getQuestion():
             return jsonify({"message": "Question added successfully"}), SIGNALS['OK']
         except Exception as e:
             print("Exception adding new question {}:{}").format(new_question, e)
-            return jsonify({"message": "Error adding question"}), SIGNALS['CONFLICT']
 
     else:
         # get list of ids seperated by commas as a string as a query param
@@ -317,7 +321,6 @@ def getQuestion():
             return jsonify({"question": json_util.dumps(question)}), SIGNALS['OK']
         except Exception as e:
             print(e)
-            return jsonify({"message": "Error getting question"}), SIGNALS['NOT_FOUND']
 
 
 @app.route("/passage", methods=['GET', 'POST'])
@@ -341,7 +344,7 @@ def getPassage():
             return jsonify({"message": "Passage added successfully"}), SIGNALS['OK']
         except Exception as e:
             print("Exception adding new passage {}:{}").format(new_question, e)
-            return jsonify({"message": "Error adding passage"}), SIGNALS['CONFLICT']
+            return jsonify({"message": "Passage already exists"}), SIGNALS['CONFLICT']
 
     else:
         # get list of ids seperated by commas as a string as a query param
@@ -361,37 +364,153 @@ def getPassage():
             return jsonify({"passage": json_util.dumps(question)}), SIGNALS['OK']
         except Exception as e:
             print(e)
-            return jsonify({"message": "Error getting passage"}), SIGNALS['NOT_FOUND']
 
 
-@app.route('/newtest', methods=['GET', 'POST'])
+@app.route('/newtest', methods=['POST'])
 @jwt_required()
 def newTest():
     if request.method == 'POST':
+
         if request.is_json:
             data = request.json
         else:
-            data = request.form
+            data = request.data
+
+        new_test = data['test']
+
+        # print("new test", new_test)
+
+        # convert source webm to wav
+        for question in new_test['questions']:
+            del question['src']
+            # question['source'] = convert_webm_to_wav(question['source'])
+        for passage in new_test['passages']:
+            del passage['src']
+            # passage['source'] = convert_webm_to_wav(passage['source'])
+
+        # TODO run ML model on new test
+        # dummy data
+        for question in new_test['questions']:
+            question['score'] = random.randint(10, 100)
+        for passage in new_test['passages']:
+            passage['score'] = random.randint(10, 100)
+
+        # dummy total score
+        new_test['total_score'] = int(np.sum([question['score'] for question in new_test['questions']]) + np.sum([
+            passage['score'] for passage in new_test['passages']]))
 
         try:
-            new_test = data['test']
-        except KeyError:
-            return jsonify({"message": "No test found"}), SIGNALS['NOT_FOUND']
+            new_test['doctor'] = get_jwt_identity()
+            new_test['date'] = datetime.now()
+            # check if already exists using case number
+            print("num", new_test['case_number'])
+            test_exists = db.tests.find_one(
+                {"case_number": new_test['case_number']})
+            print("exists", test_exists)
+            if test_exists:
+                return jsonify({"message": "Test number already exists"}), SIGNALS['CONFLICT']
 
-        # insert new test into db
-        try:
-            db.tests.insert_one({'test': new_test})
-            return jsonify({"message": "Test added successfully"}), SIGNALS['OK']
+            db.tests.insert_one(new_test)
+            id = db.tests.find_one({"case_number": new_test['case_number']})
+            # id: string of ObjectId
+            id = str(id['_id'])
+            return jsonify({"message": "Test added successfully", "id": id}), SIGNALS['OK']
         except Exception as e:
-            print("Exception adding new test {}:{}").format(new_test, e)
-            return jsonify({"message": "Error adding test"}), SIGNALS['CONFLICT']
+            # print("Exception adding new test", new_test)
+            print("Error", e)
 
-    else:
-        user = get_jwt_identity()
-        if user['role'] == 'doctor':
-            tests = db.tests.find({"doctor": user['email']})
-        elif user['role'] == 'patient':
-            tests = db.tests.find({"patient": user['email']})
+            return jsonify({"message": "Error in processing test"}), SIGNALS['INTERNAL_SERVER_ERROR']
+
+
+def create_pdf(test):
+    from fpdf import FPDF
+    # create pdf
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Arial", size=12)
+    pdf.cell(200, 10, txt="Test Case Number: " +
+             test['case_number'], ln=1, align="C")
+    pdf.cell(200, 10, txt="Test Case Name: " +
+             test['case_name'], ln=1, align="C")
+    pdf.cell(200, 10, txt="Patient: " + test['email'], ln=1, align="C")
+    # TODO age, gender, contact number, martial status, occupation, medical history, duration
+    pdf.cell(200, 10, txt="Doctor: " + test['doctor'], ln=1, align="C")
+    pdf.cell(200, 10, txt="Date: " + test['date'], ln=1, align="C")
+    pdf.cell(200, 10, txt="Total Score: " +
+             str(test['total_score']), ln=1, align="C")
+    pdf.cell(200, 10, txt="", ln=1, align="C")
+    pdf.cell(200, 10, txt="Questions:", ln=1, align="C")
+    for question in test['questions']:
+        pdf.cell(200, 10, txt=question['question'], ln=1, align="C")
+        pdf.cell(200, 10, txt="Score: " +
+                 str(question['score']), ln=1, align="C")
+        pdf.cell(200, 10, txt="", ln=1, align="C")
+    pdf.cell(200, 10, txt="Passages:", ln=1, align="C")
+    for passage in test['passages']:
+        pdf.cell(200, 10, txt=passage['passage'], ln=1, align="C")
+        pdf.cell(200, 10, txt="Score: " +
+                 str(passage['score']), ln=1, align="C")
+        pdf.cell(200, 10, txt="", ln=1, align="C")
+    pdf.cell(200, 10, txt="", ln=1, align="C")
+
+    return pdf
+
+
+@app.route('/tests', methods=['GET'])
+@jwt_required()
+def getTests():
+    user = get_current_user()
+    role = user['usertype']
+
+    try:
+        tests = None
+
+        if role == 2:  # doctor
+            tests = db.tests.find({'doctor': user['email']})
+            tests = [{"case_name": test['case_name'], "case_number": test['case_number'],
+                      "date": test['date'],
+                      "email": test['email'], "id": str(test['_id'])} for test in tests]
+
+            # test = db.tests.find(
+            #     {"doctor": user['email']}).sort([("date", -1)])
+            # print("doctor", test)
+            # return jsonify({"test": json_util.dumps(test)}), SIGNALS['OK']
+        elif role == 3:  # patient
+            tests = db.tests.find({"email": user['email']}).sort('date', -1)
+            # test = db.tests.find(
+            #     {"patient": user['email']}).sort([("date", -1)])
+            # TODO: filter details for patient
+            # TODO: generate pdf for patient based on request not here
+            # print("patient", test)
+            # return jsonify({"test": json_util.dumps(test)}), SIGNALS['OK']
         else:
-            tests = db.tests.find()
-        return jsonify({"tests": json_util.dumps(tests)}), SIGNALS['OK']
+            tests = db.tests.find().sort('date', -1)
+        return jsonify({"tests": tests}), SIGNALS['OK']
+    except InvalidId:
+        return jsonify({"message": "Invalid test id"}), SIGNALS['UNAUTHORIZED']
+    except Exception as e:
+        print(type(e))
+        return jsonify({"message": "Error in processing test"}), SIGNALS['CONFLICT']
+
+
+@app.route('/test/<id>', methods=['GET'])
+@jwt_required()
+def getTest(id):
+    user = get_current_user()
+    role = user['usertype']
+
+    print(db.users.find_one({"email": user}))
+    try:
+        if role in [0, 1, 2]:
+            test = db.tests.find_one({"_id": ObjectId(id)})
+            # create pdf
+            # pdf = create_pdf(test)
+            # TODO: verify pdf, return pdf
+            return jsonify({"test": json_util.dumps(test)}), SIGNALS['OK']
+        else:
+            return jsonify({"message": "You are not authorized to view this test"}), SIGNALS['UNAUTHORIZED']
+    except InvalidId:
+        return jsonify({"message": "Invalid test id"}), SIGNALS['NOT_FOUND']
+    except Exception as e:
+        print(type(e))
+        return jsonify({"message": "Error in processing test"}), SIGNALS['CONFLICT']
