@@ -116,7 +116,9 @@ export default function NewTest() {
       )
       .then((res) => {
         notify("Test created successfully", "success");
-        window.location.href = "/doctor";
+        console.log(res);
+        // window.location.href = "/doctor";
+        window.location.href = `/test/${res.data.id}`;
       })
       // if conflict, notify user
       // TODO: unable to catch the error in axios
