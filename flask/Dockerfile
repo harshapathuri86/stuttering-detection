@@ -1,6 +1,6 @@
 FROM python:3.8
 
-LABEL MAINTAINER="Harsha Pathuri <harsha.pathuri@students.iiit.ac.in"
+LABEL MAINTAINER="Harsha Pathuri <harsha.pathuri@students.iiit.ac.in>"
 
 ENV GROUP_ID=1000 USER_ID=1000
 
