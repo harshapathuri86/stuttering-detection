@@ -51,7 +51,7 @@ export default function ReadSentence({
     console.log("idsString", idsString);
     let token = localStorage.getItem("access_token");
     axios
-      .get("http://localhost:5000/question", {
+      .get("http://10.1.38.115:5000/question", {
         params: {
           qids: idsString,
         },

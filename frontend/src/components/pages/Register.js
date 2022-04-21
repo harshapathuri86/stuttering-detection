@@ -35,7 +35,7 @@ export default function Register() {
     console.log(data);
 
     axios
-      .post("http://localhost:5000/register", data)
+      .post("http://10.1.38.115:5000/register", data)
       .then((res) => {
         console.log(res);
         // redirect to login page

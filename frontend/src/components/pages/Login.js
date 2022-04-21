@@ -47,7 +47,7 @@ export default function Login() {
     console.log(data);
 
     axios
-      .post("http://localhost:5000/login", data, {
+      .post("http://10.1.38.115:5000/login", data, {
         headers: {
           "Content-Type": "application/json",
         },

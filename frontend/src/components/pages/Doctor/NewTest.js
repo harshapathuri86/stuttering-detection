@@ -104,7 +104,7 @@ export default function NewTest() {
     console.log("submitTest", values);
     axios
       .post(
-        "http://localhost:5000/newtest",
+        "http://10.1.38.115:5000/newtest",
         {
           test: values,
         },
