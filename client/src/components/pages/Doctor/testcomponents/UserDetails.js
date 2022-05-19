@@ -169,23 +169,7 @@ export default function UserDetails({
             error={formState.errors.email?.message ? true : false}
           />
         </Grid>
-        <Grid item xs={6}>
-          <TextField
-            required
-            id="place"
-            name="place"
-            label="Place"
-            fullWidth
-            autoComplete="place"
-            {...register("place", {
-              required: true,
-              onChange: handleChange("place"),
-              value: values.place,
-            })}
-            helperText={formState.errors.place?.message}
-            error={formState.errors.place?.message ? true : false}
-          />
-        </Grid>
+
         <Grid item xs={6}>
           <Select
             variant="outlined"

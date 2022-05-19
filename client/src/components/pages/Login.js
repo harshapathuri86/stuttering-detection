@@ -47,7 +47,7 @@ export default function Login() {
     console.log(data);
 
     axios
-      .post("http://10.1.38.115:5000/login", data, {
+      .post("/api/login", data, {
         headers: {
           "Content-Type": "application/json",
         },
@@ -62,8 +62,12 @@ export default function Login() {
           const user = JSON.parse(localStorage.getItem("user"));
           console.log(user);
 
-          if (user.usertype === 0 || user.usertype === 1) {
+          if (user.usertype === 0) {
             // super_admin
+            console.log("superadmin");
+            window.location.href = "/superadmin";
+          } else if (user.usertype === 1) {
+            // admin
             console.log("admin");
             window.location.href = "/admin";
           } else if (user.usertype === 2) {
@@ -89,7 +93,9 @@ export default function Login() {
   useEffect(() => {
     if (localStorage.getItem("user")) {
       const user = JSON.parse(localStorage.getItem("user"));
-      if (user.usertype === 0 || user.usertype === 1) {
+      if (user.usertype === 0) {
+        window.location.href = "/superadmin";
+      } else if (user.usertype === 1) {
         window.location.href = "/admin";
       } else if (user.usertype === 2) {
         window.location.href = "/doctor";

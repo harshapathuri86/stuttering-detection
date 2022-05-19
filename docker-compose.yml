@@ -1,11 +1,12 @@
 version: "3"
 
 services:
-  flask:
+  server:
     build:
-      context: ./flask
+      context: ./server
       dockerfile: Dockerfile
-    container_name: flask
+    container_name: server
+    hostname: server
     restart: unless-stopped
     image: flask
     ports:
@@ -20,11 +21,8 @@ services:
       MONGODB_USERNAME: flaskuser
       MONGODB_PASSWORD: flaskpassword
       MONGODB_HOSTNAME: mongodb
-    links:
+    depends_on:
       - mongodb
-    networks:
-      - backend
-      - frontend
 
   mongodb:
     image: mongo:latest
@@ -41,38 +39,29 @@ services:
       - "27017:27017"
     volumes:
       - mongodbdata:/data/db
-    networks:
-      - backend
 
-  # webserver:
-  #   build:
-  #     context: nginx
-  #     dockerfile: Dockerfile
-  #   image: nginx
-  #   container_name: webserver
-  #   restart: unless-stopped
-  #   environment:
-  #     APP_ENV: "dev"
-  #     APP_NAME: "webserver"
-  #     APP_DEBUG: "True"
-  #     SERVER_NAME: "webserver"
-  #   ports:
-  #     - "80:80"
-  #     - "443:443"
-  #   volumes:
-  #     - nginxdata:/var/log/nginx
-  #   depends_on:
-  #     - flask
-  #   networks:
-  #     - frontend
-
-networks:
-  frontend:
-    external: true
-  backend:
-    external: true
+  client:
+    build:
+      context: client
+      dockerfile: Dockerfile
+    image: nginx
+    container_name: client
+    restart: unless-stopped
+    environment:
+      APP_ENV: "dev"
+      APP_NAME: "webserver"
+      APP_DEBUG: "True"
+      SERVER_NAME: "webserver"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - nginxdata:/var/log/nginx
+    depends_on:
+      - server
 
 volumes:
-  flask:
   mongodbdata:
-  # nginxdata:
+  flask:
+  nginxdata:
+

@@ -29,17 +29,20 @@ export default function NewTest() {
     case_name: "",
     case_number: "",
     age: "",
-    gender: "",
+    // gender: "",
     contact_number: "",
     email: "",
     // city: "",
     // state: "",
     // pincode: "",
+    // place: "",
     martial_status: "",
     occupation: "",
+    education: "",
+    address: "",
     duration: "",
-    // nature: "",
-    history: "",
+    nature: "",
+    // history: "",
     questions: [],
     passages: [],
   });
@@ -54,12 +57,12 @@ export default function NewTest() {
     }
   };
 
-  const submitTest = () => {
-    // console.log("submitTest", values);
+  const submitTest = async () => {
     // TODO:
     // verify demographic data
     // remove unfinished questions/passages
     for (let i = 0; i < values.questions.length; i++) {
+      // console.log("check question src:", values.questions[i].src);
       if (values.questions[i].src === "") {
         values.questions.splice(i, 1);
         i--;
@@ -69,9 +72,14 @@ export default function NewTest() {
           reader.readAsDataURL(values.questions[i].src);
           reader.onloadend = function () {
             values.questions[i].source = reader.result;
+            setValues({ ...values });
+            // console.log("question source:", values.questions[i].source);
           };
+          // wait till reader.onloadend is called
+          await new Promise((resolve) => setTimeout(resolve, 1000));
         } catch (err) {
           console.log(err);
+          toast.error("Error reading file");
         }
       }
     }
@@ -90,7 +98,11 @@ export default function NewTest() {
           reader.readAsDataURL(values.passages[i].src);
           reader.onloadend = function () {
             values.passages[i].source = reader.result;
+            setValues({ ...values });
           };
+
+          // wait till reader.onloadend is called
+          await new Promise((resolve) => setTimeout(resolve, 1000));
         } catch (err) {
           console.log(err);
         }
@@ -101,24 +113,40 @@ export default function NewTest() {
       setStep(3);
       return;
     }
-    console.log("submitTest", values);
+    // console.log("submitTest", values);
+    const formdata = new FormData();
+
+    formdata.append("case_name", values.case_name);
+    formdata.append("case_number", values.case_number);
+    formdata.append("age", values.age);
+    formdata.append("contact_number", values.contact_number);
+    formdata.append("email", values.email);
+    formdata.append("martial_status", values.martial_status);
+    formdata.append("occupation", values.occupation);
+    formdata.append("education", values.education);
+    formdata.append("address", values.address);
+    formdata.append("duration", values.duration);
+    formdata.append("nature", values.nature);
+    formdata.append("questions", JSON.stringify(values.questions));
+    formdata.append("passages", JSON.stringify(values.passages));
+
+    // for (let [key, value] of formdata.entries()) {
+    //   console.log(key, value);
+    // }
+
     axios
-      .post(
-        "http://10.1.38.115:5000/newtest",
-        {
-          test: values,
+      .post("/api/newtest", formdata, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
         },
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-          },
-        }
-      )
+      })
       .then((res) => {
         notify("Test created successfully", "success");
         console.log(res);
-        // window.location.href = "/doctor";
-        window.location.href = `/test/${res.data.id}`;
+        setTimeout(() => {
+          window.location.href = "/doctor";
+        }, 2000);
+        // window.location.href = `/test/${res.data.id}`;
       })
       // if conflict, notify user
       // TODO: unable to catch the error in axios

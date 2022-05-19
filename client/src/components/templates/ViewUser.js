@@ -18,15 +18,34 @@ import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import axios from "axios";
 import { Card } from "@mui/material";
+import { useParams } from "react-router-dom";
+
 export const theme = createTheme();
 
 export function Home() {
+  const { id } = useParams();
   const [user, setUser] = React.useState([]);
+  const [username, setUsername] = React.useState([]);
   useEffect(() => {
     if (!localStorage.getItem("user")) window.location.href = "/";
     const user = JSON.parse(localStorage.getItem("user"));
-    if (user.usertype !== 2) window.location.href = "/";
+    if (user.usertype !== 1) window.location.href = "/";
     setUser(user);
+    axios
+      .get(`/api/username/${id}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+        },
+      })
+      .then((res) => {
+        // console.log("tests", res.data);
+        // console.log("tests", tests);
+        setUsername(res.data.username);
+        // convert string to array of objects
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   }, []);
 
   return (
@@ -40,19 +59,10 @@ export function Home() {
           }}
         >
           <Typography component="h1" variant="h5">
-            Welcome to your dashboard, {user.username} !
+            {username}'s Dashboard !
           </Typography>
         </Box>
-        <Box
-          sx={{
-            marginTop: 8,
-            display: "flex",
-          }}
-        >
-          <Typography component="h1" variant="h5">
-            You are logged in as a doctor.
-          </Typography>
-        </Box>
+
         {/* button */}
         <Box
           sx={{
@@ -60,35 +70,33 @@ export function Home() {
             display: "flex",
             flexDirection: "row",
           }}
+        ></Box>
+        <Box
+          sx={{
+            marginTop: 8,
+            display: "flex",
+            flexDirection: "row",
+          }}
         >
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={() => (window.location.href = "/newtest")}
-          >
-            New Test
-          </Button>
+          <TestList ID={id} />
         </Box>
       </Container>
-      <Box
-        sx={{
-          marginTop: 8,
-          display: "flex",
-          flexDirection: "row",
-        }}
-      >
-        <TestList />
-      </Box>
     </ThemeProvider>
   );
 }
 
-export function TestList() {
+export function TestList(ID) {
   const [tests, setTests] = React.useState([]);
+  // const [id,setID] = React.useState(ID);
+  const id = ID;
+
   useEffect(() => {
+    console.log("this s");
+
+    console.log(id.ID);
     // console.log("token", localStorage.getItem("access_token"));
     axios
-      .get("http://10.1.38.115:5000/tests", {
+      .get(`/api/user/${id.ID}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("access_token")}`,
         },
@@ -116,6 +124,7 @@ export function TestList() {
 }
 
 const TestCard = ({ test }) => {
+  console.log(test);
   return (
     <Card
       sx={{

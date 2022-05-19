@@ -28,7 +28,7 @@ export default function ViewTest() {
   const [loading, setLoading] = React.useState(true);
   useEffect(() => {
     axios
-      .get(`http://localhost:5000/test/${id}`, {
+      .get(`/api/test/${id}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("access_token")}`,
         },

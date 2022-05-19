@@ -1,3 +1,4 @@
+
 FROM python:3.8
 
 LABEL MAINTAINER="Harsha Pathuri <harsha.pathuri@students.iiit.ac.in>"
@@ -5,7 +6,7 @@ LABEL MAINTAINER="Harsha Pathuri <harsha.pathuri@students.iiit.ac.in>"
 ENV GROUP_ID=1000 USER_ID=1000
 
 COPY requirements.txt /
-RUN pip3 install -r /requirements.txt
+RUN pip3 install --no-cache-dir -r /requirements.txt
 
 COPY . /app
 WORKDIR /app
