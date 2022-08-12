@@ -1,30 +1,24 @@
-from cgi import test
-from flask import Flask, request, jsonify
+from flask import request, jsonify
 from app import app
 from flask_cors import CORS
 import bcrypt
 import pymongo
 import json
-from flask_jwt_extended import JWTManager, jwt_required, create_access_token, get_jwt_identity, get_current_user, current_user, get_jwt, create_refresh_token
+from flask_jwt_extended import JWTManager, jwt_required, create_access_token, get_jwt_identity, get_current_user, current_user, create_refresh_token
 from pymongo import MongoClient
 from bson.objectid import ObjectId
 from bson.errors import InvalidId
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from flask_mail import Mail, Message
 from threading import Thread
 from bson import json_util
-import os
 import random
 import numpy as np
-
+import os
 CORS(app, supports_credentials=True, origins='*')
-# while running docker compose
-app.config["MONGO_URI"] = 'mongodb://' + os.environ['MONGODB_USERNAME'] + ':' + \
-    os.environ['MONGODB_PASSWORD'] + '@' + \
-    os.environ['MONGODB_HOSTNAME'] + ':27017'
 
-# while developing
-#app.config['MONGO_URI'] = 'mongodb://flaskuser:flaskpassword@localhost:27017'
+# dev config
+app.config['MONGO_URI'] = 'mongodb://flaskuser:flaskpassword@localhost:27017'
 
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(days=30)
 app.config["JWT_REFRESH_TOKEN_EXPIRES"] = timedelta(days=30)

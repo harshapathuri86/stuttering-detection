@@ -1,28 +1,28 @@
 version: "3"
 
 services:
-  server:
-    build:
-      context: ./server
-      dockerfile: Dockerfile
-    container_name: server
-    hostname: server
-    restart: unless-stopped
-    image: flask
-    ports:
-      - "5000:5000"
-    volumes:
-      - flask:/var/www
-    environment:
-      APP_ENV: "dev"
-      APP_PORT: 5000
-      APP_DEBUG: "True"
-      MONGODB_DATABASE: flaskdb
-      MONGODB_USERNAME: flaskuser
-      MONGODB_PASSWORD: flaskpassword
-      MONGODB_HOSTNAME: mongodb
-    depends_on:
-      - mongodb
+  # server:
+  #   build:
+  #     context: ./server
+  #     dockerfile: Dockerfile
+  #   container_name: server
+  #   hostname: server
+  #   restart: unless-stopped
+  #   image: flask
+  #   ports:
+  #     - "5000:5000"
+  #   volumes:
+  #     - flask:/var/www
+  #   environment:
+  #     APP_ENV: "dev"
+  #     APP_PORT: 5000
+  #     APP_DEBUG: "True"
+  #     MONGODB_DATABASE: flaskdb
+  #     MONGODB_USERNAME: flaskuser
+  #     MONGODB_PASSWORD: flaskpassword
+  #     MONGODB_HOSTNAME: mongodb
+  #   depends_on:
+  #     - mongodb
 
   mongodb:
     image: mongo:latest
@@ -40,28 +40,28 @@ services:
     volumes:
       - mongodbdata:/data/db
 
-  client:
-    build:
-      context: client
-      dockerfile: Dockerfile
-    image: nginx
-    container_name: client
-    restart: unless-stopped
-    environment:
-      APP_ENV: "dev"
-      APP_NAME: "webserver"
-      APP_DEBUG: "True"
-      SERVER_NAME: "webserver"
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - nginxdata:/var/log/nginx
-    depends_on:
-      - server
+  # client:
+  #   build:
+  #     context: client
+  #     dockerfile: Dockerfile
+  #   image: nginx
+  #   container_name: client
+  #   restart: unless-stopped
+  #   environment:
+  #     APP_ENV: "dev"
+  #     APP_NAME: "webserver"
+  #     APP_DEBUG: "True"
+  #     SERVER_NAME: "webserver"
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #   volumes:
+  #     - nginxdata:/var/log/nginx
+  #   depends_on:
+  #     - server
 
 volumes:
   mongodbdata:
-  flask:
-  nginxdata:
+  # flask:
+  # nginxdata:
 

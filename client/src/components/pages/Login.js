@@ -47,7 +47,7 @@ export default function Login() {
     console.log(data);
 
     axios
-      .post("/api/login", data, {
+      .post("http://localhost:5000/login", data, {
         headers: {
           "Content-Type": "application/json",
         },

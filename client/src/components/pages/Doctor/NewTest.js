@@ -135,7 +135,7 @@ export default function NewTest() {
     // }
 
     axios
-      .post("/api/newtest", formdata, {
+      .post("http://localhost:5000/newtest", formdata, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("access_token")}`,
         },

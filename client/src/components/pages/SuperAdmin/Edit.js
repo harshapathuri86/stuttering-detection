@@ -128,7 +128,7 @@ export function DoctorsList() {
   useEffect(() => {
     // console.log("token", localStorage.getItem("access_token"));
     axios
-      .get("/api/doctors", {
+      .get("http://localhost:5000/doctors", {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("access_token")}`,
           // "Access-Control-Allow-Origin": "*"
@@ -164,7 +164,7 @@ const PatientsList = ({ user }) => {
   useEffect(() => {
     // console.log("token", localStorage.getItem("access_token"));
     axios
-      .get("/api/patients", {
+      .get("http://localhost:5000/patients", {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("access_token")}`,
         },
