@@ -1,3 +1,4 @@
+import requests
 from flask import request, jsonify
 from app import app
 from flask_cors import CORS
@@ -15,6 +16,8 @@ from bson import json_util
 import random
 import numpy as np
 import os
+import base64
+
 CORS(app, supports_credentials=True, origins='*')
 
 # dev config
@@ -69,6 +72,22 @@ USER_TYPES = {
 }
 
 # helper functions :-----------------------------------------------------
+
+
+def convert_ogg_to_wav(audio):
+    data = audio.split(',')[1]
+    data = base64.b64decode(data)
+    file_name = datetime.now().strftime('%Y%m%d%H%M%S%f')
+    with open(file_name+'.ogg', 'wb') as f:
+        f.write(data)
+
+    # convert ogg to wav
+    os.system('ffmpeg -i {}.ogg {}.wav'.format(file_name, file_name))
+    with open(file_name+'.wav', 'rb') as f:
+        data = f.read()
+    os.remove(file_name+'.ogg')
+    os.remove(file_name+'.wav')
+    return data
 
 
 def send_async_email(app, msg):
@@ -381,28 +400,59 @@ def newTest():
         new_test['passages'] = json.loads(new_test['passages'])
 
         # get values from form
-        print("new_test", new_test)
+        # print("new_test", new_test)
 
         # json parse
 
-        # convert source webm to wav
         for question in new_test['questions']:
             del question['src']
-            # question['source'] = convert_webm_to_wav(question['source'])
+            question['wav'] = convert_ogg_to_wav(question['source'])
         for passage in new_test['passages']:
             del passage['src']
-            # passage['source'] = convert_webm_to_wav(passage['source'])
+            passage['wav'] = convert_ogg_to_wav(passage['source'])
 
         # TODO run ML model on new test
         # dummy data
+        # print("new_test", new_test)
+
+        # send all the question['source'] and passage['source'] to the api located at http://localhost:8000
+        # get the results from the api and store them in the database
+        print("=="*20)
+        audios = []
+        i = 0
         for question in new_test['questions']:
-            question['score'] = random.randint(10, 100)
+            question['index'] = i
+            i += 1
+            audios.append(question['wav'])
         for passage in new_test['passages']:
-            passage['score'] = random.randint(10, 100)
+            passage['index'] = i
+            i += 1
+            audios.append(passage['wav'])
+        audioFiles = []
+        for i, audio in enumerate(audios):
+            audioFiles.append(
+                ('audios',
+                 ('audio_{}.wav'.format(i), audio, 'audio/wav')
+                 )
+            )
+
+        output = requests.post('http://localhost:8000/', files=audioFiles)
+
+        output = json.loads(output.text)
+        print("=="*20)
+        for question in new_test['questions']:
+            question['score'] = output[question['index']]
+            del question['wav']
+            del question['index']
+
+        for passage in new_test['passages']:
+            passage['score'] = output[passage['index']]
+            del passage['wav']
+            del passage['index']
 
         # dummy total score
-        new_test['total_score'] = int(np.sum([question['score'] for question in new_test['questions']]) + np.sum([
-            passage['score'] for passage in new_test['passages']]))
+        # new_test['total_score'] = int(np.sum([question['score'] for question in new_test['questions']]) + np.sum([
+        # passage['score'] for passage in new_test['passages']]))
 
         try:
             new_test['doctor'] = get_jwt_identity()
@@ -425,40 +475,6 @@ def newTest():
             print("Error", e)
 
             return jsonify({"message": "Error in processing test"}), SIGNALS['INTERNAL_SERVER_ERROR']
-
-
-# def create_pdf(test):
-#     from fpdf import FPDF
-#     # create pdf
-#     pdf = FPDF()
-#     pdf.add_page()
-#     pdf.set_font("Arial", size=12)
-#     pdf.cell(200, 10, txt="Test Case Number: " +
-#              test['case_number'], ln=1, align="C")
-#     pdf.cell(200, 10, txt="Test Case Name: " +
-#              test['case_name'], ln=1, align="C")
-#     pdf.cell(200, 10, txt="Patient: " + test['email'], ln=1, align="C")
-#     # TODO age, gender, contact number, martial status, occupation, medical history, duration
-#     pdf.cell(200, 10, txt="Doctor: " + test['doctor'], ln=1, align="C")
-#     pdf.cell(200, 10, txt="Date: " + test['date'], ln=1, align="C")
-#     pdf.cell(200, 10, txt="Total Score: " +
-#              str(test['total_score']), ln=1, align="C")
-#     pdf.cell(200, 10, txt="", ln=1, align="C")
-#     pdf.cell(200, 10, txt="Questions:", ln=1, align="C")
-#     for question in test['questions']:
-#         pdf.cell(200, 10, txt=question['question'], ln=1, align="C")
-#         pdf.cell(200, 10, txt="Score: " +
-#                  str(question['score']), ln=1, align="C")
-#         pdf.cell(200, 10, txt="", ln=1, align="C")
-#     pdf.cell(200, 10, txt="Passages:", ln=1, align="C")
-#     for passage in test['passages']:
-#         pdf.cell(200, 10, txt=passage['passage'], ln=1, align="C")
-#         pdf.cell(200, 10, txt="Score: " +
-#                  str(passage['score']), ln=1, align="C")
-#         pdf.cell(200, 10, txt="", ln=1, align="C")
-#     pdf.cell(200, 10, txt="", ln=1, align="C")
-
-#     return pdf
 
 
 @app.route('/tests', methods=['GET'])

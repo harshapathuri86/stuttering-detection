@@ -66,9 +66,9 @@ def run_model(model, audio):
     xarr_test = cerating_arrays_1(mfc_raj_1)
     yhat_classess = (model.predict(xarr_test) > 0.5).astype("int16")
     yhat_classess = yhat_classess[:, 0]
-    print(yhat_classess)
+    # print(yhat_classess)
 
-    print(len(yhat_classess))
+    # print(len(yhat_classess))
     # count ones in yhat_classess
     c_1 = np.count_nonzero(yhat_classess)
     c_0 = len(yhat_classess) - c_1
