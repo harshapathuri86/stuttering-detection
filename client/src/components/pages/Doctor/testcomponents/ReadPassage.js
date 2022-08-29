@@ -199,7 +199,7 @@ export function NewPassage({ passage, index, deletePassage, updatePassage }) {
             variant="contained"
             color="error"
             onClick={() => {
-              deletePassage(index);
+              deletePassage(passage);
             }}
           >
             Delete Passage

@@ -16,7 +16,7 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
-
+import InputLabel from "@mui/material/InputLabel";
 //     </Grid>
 //   </form>;
 // };
@@ -58,7 +58,7 @@ export default function UserDetails({
   // };
 
   const onSubmit = (data) => {
-    console.log("submit data", data);
+    // console.log("submit data", data);
     nextStep();
   };
 
@@ -79,7 +79,7 @@ export default function UserDetails({
               onChange: handleChange("case_name"),
               value: values.case_name,
             })}
-            helperText={formState.errors.case_name?.message}
+            helpertext={formState.errors.case_name?.message}
             error={formState.errors.case_name?.message ? true : false}
           />
         </Grid>
@@ -100,7 +100,7 @@ export default function UserDetails({
               },
               value: values.case_number,
             })}
-            helperText={formState.errors.case_number?.message}
+            helpertext={formState.errors.case_number?.message}
             error={formState.errors.case_number?.message ? true : false}
           />
         </Grid>
@@ -121,7 +121,7 @@ export default function UserDetails({
               },
               value: values.age,
             })}
-            helperText={formState.errors.age?.message}
+            helpertext={formState.errors.age?.message}
             error={formState.errors.age?.message ? true : false}
           />
         </Grid>
@@ -143,7 +143,7 @@ export default function UserDetails({
               },
               value: values.contact_number,
             })}
-            helperText={formState.errors.contact_number?.message}
+            helpertext={formState.errors.contact_number?.message}
             error={formState.errors.contact_number?.message ? true : false}
           />
         </Grid>
@@ -165,17 +165,18 @@ export default function UserDetails({
               },
               value: values.email,
             })}
-            helperText={formState.errors.email?.message}
+            helpertext={formState.errors.email?.message}
             error={formState.errors.email?.message ? true : false}
           />
         </Grid>
 
         <Grid item xs={6}>
+          <InputLabel id="martial-status-label">Martial Status</InputLabel>{" "}
           <Select
             variant="outlined"
             fullWidth
-            id="role"
-            label="Role"
+            required
+            labelId="martial-status-label"
             defaultValue={""}
             value={values.martial_status}
             {...register("martial_status", {
@@ -187,7 +188,7 @@ export default function UserDetails({
               value: values.martial_status,
             })}
             error={formState.errors.martial_status?.message ? true : false}
-            helperText={formState.errors.martial_status?.message}
+            helpertext={formState.errors.martial_status?.message}
           >
             <MenuItem value=""> </MenuItem>
             <MenuItem value={"single"}>Single</MenuItem>
@@ -212,7 +213,7 @@ export default function UserDetails({
               onChange: handleChange("occupation"),
               value: values.occupation,
             })}
-            helperText={formState.errors.occupation?.message}
+            helpertext={formState.errors.occupation?.message}
             error={formState.errors.occupation?.message ? true : false}
           />
         </Grid>
@@ -229,7 +230,7 @@ export default function UserDetails({
               onChange: handleChange("education"),
               value: values.education,
             })}
-            helperText={formState.errors.education?.message}
+            helpertext={formState.errors.education?.message}
             error={formState.errors.education?.message ? true : false}
           />
         </Grid>
@@ -246,16 +247,16 @@ export default function UserDetails({
               onChange: handleChange("address"),
               value: values.address,
             })}
-            helperText={formState.errors.address?.message}
+            helpertext={formState.errors.address?.message}
             error={formState.errors.address?.message ? true : false}
           />
         </Grid>
         <Grid item xs={6}>
+          <InputLabel id="duration-label">Duration</InputLabel>{" "}
           <Select
             variant="outlined"
             fullWidth
-            id="role"
-            label="Role"
+            labelId="duration-label"
             defaultValue={""}
             value={values.duration}
             {...register("duration", {
@@ -266,7 +267,7 @@ export default function UserDetails({
               onChange: handleChange("duration"),
               value: values.duration,
             })}
-            helperText={formState.errors.duration?.message}
+            helpertext={formState.errors.duration?.message}
             error={formState.errors.role ? true : false}
           >
             <MenuItem value=""> </MenuItem>
@@ -292,7 +293,7 @@ export default function UserDetails({
               onChange: handleChange("nature"),
               value: values.nature,
             })}
-            helperText={formState.errors.nature?.message}
+            helpertext={formState.errors.nature?.message}
             error={formState.errors.nature?.message ? true : false}
           />
         </Grid>

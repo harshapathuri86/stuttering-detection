@@ -197,11 +197,11 @@ export default function NewTest() {
   };
 
   const updatePassage = (passage) => {
-    let pass = values.passages.map((q) => {
-      if (q.id === passage.id) {
+    let pass = values.passages.map((p) => {
+      if (p.id === passage.id) {
         return passage;
       } else {
-        return q;
+        return p;
       }
     });
     setValues({ ...values, passages: pass });
@@ -213,7 +213,7 @@ export default function NewTest() {
   };
 
   const handleChange = (input) => (e) => {
-    console.log("handle", e.target.value);
+    // console.log("handle", e.target.value);
     setValues({ ...values, [input]: e.target.value });
   };
 

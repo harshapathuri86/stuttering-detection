@@ -109,6 +109,9 @@ const DisplayQuestion = ({ question }) => {
       <audio controls>
         <source src={question.source} type="audio/webm" controls />
       </audio>
+      <Typography component="h1" variant="h6">
+        {"Score: " + question.score.toString()}
+      </Typography>
       <Divider />
     </div>
   );
@@ -150,6 +153,9 @@ const DisplayPassage = ({ passage }) => {
       <audio controls>
         <source src={passage.source} type="audio/webm" controls />
       </audio>
+      <Typography component="h1" variant="h6">
+        {"Score: " + passage.score.toString()}
+      </Typography>
       <Divider />
     </div>
   );
