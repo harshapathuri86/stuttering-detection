@@ -123,7 +123,6 @@ const TestCard = ({ test }) => {
         display: "flex",
         flexDirection: "row",
       }}
-      onClick={() => (window.location.href = `/test/${test.id}`)}
     >
       {/* <Grid> */}
       <Grid item xs={8}>
@@ -141,6 +140,20 @@ const TestCard = ({ test }) => {
           {test.date}
         </Typography>
       </Grid>
+      <Grid item xs={8}>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => (window.location.href = `/test/${test.id}`)}
+        >
+          View Report
+        </Button>
+      </Grid>
+      {/* <Grid item xs={8}>
+        <PDFDownloadLink document={<TestDocument data={ test } />} fileName="test_report.pdf">
+          {({ blob, url, loading, error }) => (loading ? 'Loading document...' : 'Download')}
+        </PDFDownloadLink>
+      </Grid> */}
     </Card>
     // </Grid>
   );
