@@ -36,8 +36,11 @@ Can also be done using postman.
 chmod +x add_data.sh
 ./add_data.sh
 ```
-
-
+### Fastapi
+```bash
+pip install fastapi uvicorn python-multipart scipy python_-speech_features keras tensorflow
+./start.sh
+```
 
 ### Client
 
