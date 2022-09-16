@@ -191,7 +191,34 @@ export default function ViewTest() {
 
             <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)' }}>
               <Typography variant="body1">
-                <span style={{ fontWeight: 'bold' }}>Total Score</span>
+                <span style={{ fontWeight: 'bold' }}>Percentage of disfluencies in Spontaneous speech</span>
+              </Typography>
+              <Typography variant="body1">
+                _
+              </Typography>
+            </Box>
+
+            <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)' }}>
+              <Typography variant="body1">
+                <span style={{ fontWeight: 'bold' }}>Percentage of disfluencies in Reading</span>
+              </Typography>
+              <Typography variant="body1">
+                _
+              </Typography>
+            </Box>
+
+            <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)' }}>
+              <Typography variant="body1">
+                <span style={{ fontWeight: 'bold' }}>Overall percentage of disfluencies</span>
+              </Typography>
+              <Typography variant="body1">
+                _
+              </Typography>
+            </Box>
+
+            <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)' }}>
+              <Typography variant="body1">
+                <span style={{ fontWeight: 'bold' }}>Total number of syllables uttered</span>
               </Typography>
               <Typography variant="body1">
                 {test.total_score}
@@ -221,7 +248,11 @@ export default function ViewTest() {
               color="primary"
               onClick={printDocument}
             >
-              Download Report
+              <Grid container direction="row" spacing={1} alignItems={'center'} justify={'center'} style={{ width: "100%" }}>
+                <Grid item>
+                  Download Report
+                </Grid>
+              </Grid>
             </Button>
           </Grid>
         </div>
@@ -270,7 +301,13 @@ const DisplayQuestion = ({ question }) => {
       </audio>
 
       <Typography variant="body1">
-        <span style={{ fontWeight: 'bold' }}>Score</span>&nbsp;&nbsp;&nbsp;{question.score}
+        <span style={{ fontWeight: 'bold' }}>Total number of syallables</span>&nbsp;&nbsp;&nbsp;{question.score}
+      </Typography>
+      <Typography variant="body1">
+        <span style={{ fontWeight: 'bold' }}>Clean syllables</span>&nbsp;&nbsp;&nbsp;_
+      </Typography>
+      <Typography variant="body1">
+        <span style={{ fontWeight: 'bold' }}>Stuttered syllables</span>&nbsp;&nbsp;&nbsp;_
       </Typography>
       <br />
 
@@ -318,7 +355,13 @@ const DisplayPassage = ({ passage }) => {
       </audio>
 
       <Typography variant="body1">
-        <span style={{ fontWeight: 'bold' }}>Score</span>&nbsp;&nbsp;&nbsp;{passage.score}
+        <span style={{ fontWeight: 'bold' }}>Total number of syallables</span>&nbsp;&nbsp;&nbsp;{passage.score}
+      </Typography>
+      <Typography variant="body1">
+        <span style={{ fontWeight: 'bold' }}>Clean syllables</span>&nbsp;&nbsp;&nbsp;_
+      </Typography>
+      <Typography variant="body1">
+        <span style={{ fontWeight: 'bold' }}>Stuttered syllables</span>&nbsp;&nbsp;&nbsp;_
       </Typography>
       <br />
 
