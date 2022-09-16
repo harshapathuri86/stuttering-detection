@@ -28,7 +28,7 @@ flask run
 
 Run `flask run` again when made changes to the server.
 
-**Add questions and passages into the database.**
+## Add questions and passages into the database.**
 This is done only once. (Requires httpie package)
 Can also be done using postman.
 
