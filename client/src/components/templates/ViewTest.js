@@ -23,6 +23,7 @@ import RecordRTC, { invokeSaveAsDialog } from "recordrtc";
 import { useParams } from "react-router-dom";
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
+import html2pdf from 'html2pdf.js';
 
 export default function ViewTest() {
   const { id } = useParams();
@@ -47,32 +48,24 @@ export default function ViewTest() {
 
   const printDocument = () => {
     const input = document.getElementById('divToPrint');
-    html2canvas(input)
-      .then((canvas) => {
-        const imgData = canvas.toDataURL('image/png');
-        var imgWidth = 210;
-        var pageHeight = 295;
-        var imgHeight = canvas.height * imgWidth / canvas.width;
-        var heightLeft = imgHeight;
+    const opt = {
+      margin: 1,
+      filename: 'test_report.pdf',
+      image: { type: 'jpeg', quality: 0.98 },
+      // html2canvas: { scale: 2.5 },
+      pagebreak: { mode: ['avoid-all', 'css', 'legacy'] },
+      jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
+    };
 
+    // New Promise-based usage:
+    html2pdf()
+      .set(opt)
+      .from(input)
+      .save();
 
-        var doc = new jsPDF('p', 'mm');
-        var position = 0;
-
-        doc.addImage(imgData, 'PNG', 1, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
-
-        while (heightLeft >= 0) {
-          position = heightLeft - imgHeight;
-          doc.addPage();
-          doc.addImage(imgData, 'PNG', 1, position, imgWidth, imgHeight);
-          heightLeft -= pageHeight;
-        }
-        doc.save('test_report.pdf');
-      })
-      ;
+    // Old monolithic-style usage:
+    // html2pdf(input, opt);
   };
-
 
   return (
     <Container component="main" maxWidth="s">
@@ -242,19 +235,24 @@ export default function ViewTest() {
               <DisplayPassages passages={test.passages} />
             </Box>
           </div>
-          <Grid item xs={8}>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={printDocument}
+            <Box
+              display="flex"
+              justifyContent="center"
+              alignItems="center"
+              minHeight="8vh"
             >
-              <Grid container direction="row" spacing={1} alignItems={'center'} justify={'center'} style={{ width: "100%" }}>
-                <Grid item>
-                  Download Report
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={printDocument}
+              >
+                <Grid container direction="row" spacing={1} alignItems={'center'} justify={'center'} style={{ width: "100%" }}>
+                  <Grid item>
+                    Download Report
+                  </Grid>
                 </Grid>
-              </Grid>
-            </Button>
-          </Grid>
+              </Button>
+            </Box>
         </div>
       )}
     </Container>
@@ -301,7 +299,7 @@ const DisplayQuestion = ({ question }) => {
       </audio>
 
       <Typography variant="body1">
-        <span style={{ fontWeight: 'bold' }}>Total number of syallables</span>&nbsp;&nbsp;&nbsp;{question.score}
+        <span style={{ fontWeight: 'bold' }}>Total number of syllables</span>&nbsp;&nbsp;&nbsp;{question.score}
       </Typography>
       <Typography variant="body1">
         <span style={{ fontWeight: 'bold' }}>Clean syllables</span>&nbsp;&nbsp;&nbsp;_
@@ -355,7 +353,7 @@ const DisplayPassage = ({ passage }) => {
       </audio>
 
       <Typography variant="body1">
-        <span style={{ fontWeight: 'bold' }}>Total number of syallables</span>&nbsp;&nbsp;&nbsp;{passage.score}
+        <span style={{ fontWeight: 'bold' }}>Total number of syllables</span>&nbsp;&nbsp;&nbsp;{passage.score}
       </Typography>
       <Typography variant="body1">
         <span style={{ fontWeight: 'bold' }}>Clean syllables</span>&nbsp;&nbsp;&nbsp;_
