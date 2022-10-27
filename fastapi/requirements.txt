@@ -1,8 +1,0 @@
-wheel
-fastapi
-uvicorn
-python-multipart
-python_speech_features
-scipy
-keras
-tensorflow

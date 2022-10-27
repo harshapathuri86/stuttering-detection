@@ -32,8 +32,10 @@ async def stutter(audios: List[UploadFile] = File(...)):
             # print(audio.filename)
             print(audio.content_type)
             output = run_model(model, audio.file)
+            print("output", output)
             result.append(list(output))
             # result[audio.filename] = output
+            print("result", result)
         result = json.dumps(result)
         return Response(content=result, media_type="application/json")
     except Exception as e:
