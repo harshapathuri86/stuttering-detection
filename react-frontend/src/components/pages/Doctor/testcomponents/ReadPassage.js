@@ -54,7 +54,7 @@ export default function ReadPassage({
     });
     idsString = idsString.slice(0, -1);
     axios
-      .get("http://localhost:5000/passage", {
+      .get("/api/passage", {
         params: {
           pids: idsString,
         },
