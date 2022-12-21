@@ -305,6 +305,8 @@ def run_model(model, audio):
     #print("val_ind", val_ind)
     #print("yhat", len(yhat_classess))
 
+    print("yhatclasses", yhat_classess)
+    print("valind", val_ind)
     yhat_splitted = np.split(yhat_classess, val_ind)
 
     yhat_splitted_list = np.array([np.array([np.count_nonzero(

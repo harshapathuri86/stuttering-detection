@@ -21,7 +21,12 @@ import base64
 CORS(app, supports_credentials=True, origins='*')
 
 # dev config
-app.config['MONGO_URI'] = 'mongodb://flaskuser:flaskpassword@localhost:27017'
+#app.config['MONGO_URI'] = 'mongodb://flaskuser:flaskpassword@localhost:27017'
+app.config["MONGO_URI"] = 'mongodb://' + os.environ['MONGODB_USERNAME'] + ':' + \
+    os.environ['MONGODB_PASSWORD'] + '@' + \
+    os.environ['MONGODB_HOSTNAME'] + ':27017'
+
+app.config['ML_MODEL_URL'] = os.environ['ML_MODEL_URL']
 
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(days=30)
 app.config["JWT_REFRESH_TOKEN_EXPIRES"] = timedelta(days=30)
@@ -415,7 +420,7 @@ def newTest():
         # dummy data
         # print("new_test", new_test)
 
-        # send all the question['source'] and passage['source'] to the api located at http://localhost:8000
+        # send all the question['source'] and passage['source'] to the api located at ML_MODEL_URL
         # get the results from the api and store them in the database
         print("=="*20)
         audios = []
@@ -436,7 +441,7 @@ def newTest():
                  )
             )
 
-        output = requests.post('http://localhost:8000/', files=audioFiles)
+        output = requests.post(app.config['ML_MODEL_URL'], files=audioFiles)
 
         output = json.loads(output.text)
         print("=="*20)

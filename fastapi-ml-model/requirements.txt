@@ -1,0 +1,12 @@
+fastapi==0.85.1
+Gammatone @ git+https://github.com/detly/gammatone.git@0626328ef7c31d3b33214db2fdcd52e8601eb4c5
+librosa==0.9.2
+numpy==1.22.3
+pandas==1.5.1
+python-speech-features==0.6
+scipy==1.9.3
+tensorflow==2.10.0
+typing_extensions==4.4.0
+uvicorn==0.19.0
+soundfile==0.11.0
+python-multipart==0.0.5

@@ -1,28 +1,61 @@
 version: "3"
 
 services:
-  # server:
-  #   build:
-  #     context: ./server
-  #     dockerfile: Dockerfile
-  #   container_name: server
-  #   hostname: server
-  #   restart: unless-stopped
-  #   image: flask
-  #   ports:
-  #     - "5000:5000"
-  #   volumes:
-  #     - flask:/var/www
-  #   environment:
-  #     APP_ENV: "dev"
-  #     APP_PORT: 5000
-  #     APP_DEBUG: "True"
-  #     MONGODB_DATABASE: flaskdb
-  #     MONGODB_USERNAME: flaskuser
-  #     MONGODB_PASSWORD: flaskpassword
-  #     MONGODB_HOSTNAME: mongodb
-  #   depends_on:
-  #     - mongodb
+  react:
+   build:
+     context: ./react-frontend
+   container_name: react-frontend
+   hostname: react
+
+   ports:
+     - "3000:3000"
+   environment:
+     - BACKEND_URL=http://flask:5000
+   volumes:
+     - ./react-frontend:/app
+   restart: always
+
+  flask:
+    build:
+      context: ./flask-backend
+    container_name: flask-backend
+    ports:
+      - "5000:5000"
+    hostname: flask
+    environment:
+      APP_ENV: "dev"
+      APP_PORT: 5000
+      APP_DEBUG: "True"
+      MONGODB_DATABASE: flaskdb
+      MONGODB_USERNAME: flaskuser
+      MONGODB_PASSWORD: flaskpassword
+      MONGODB_HOSTNAME: mongodb
+      ML_MODEL_URL: http://fastapi:8000      
+    volumes:
+      - ./flask-backend:/app
+    depends_on:
+      - mongodb
+    restart: always
+
+  #  client:
+  #    build:
+  #      context: client
+  #      dockerfile: Dockerfile
+  #    image: nginx
+  #    container_name: client
+  #    restart: unless-stopped
+  #    environment:
+  #      APP_ENV: "dev"
+  #      APP_NAME: "webserver"
+  #      APP_DEBUG: "True"
+  #      SERVER_NAME: "webserver"
+  #    ports:
+  #      - "80:80"
+  #      - "443:443"
+  #    volumes:
+  #      - nginxdata:/var/log/nginx
+  #    depends_on:
+  #      - server
 
   mongodb:
     image: mongo:latest
@@ -39,29 +72,19 @@ services:
       - "27017:27017"
     volumes:
       - mongodbdata:/data/db
-
-  # client:
-  #   build:
-  #     context: client
-  #     dockerfile: Dockerfile
-  #   image: nginx
-  #   container_name: client
-  #   restart: unless-stopped
-  #   environment:
-  #     APP_ENV: "dev"
-  #     APP_NAME: "webserver"
-  #     APP_DEBUG: "True"
-  #     SERVER_NAME: "webserver"
-  #   ports:
-  #     - "80:80"
-  #     - "443:443"
-  #   volumes:
-  #     - nginxdata:/var/log/nginx
-  #   depends_on:
-  #     - server
+    restart: always
+  
+  fastapi:
+    build:
+      context: ./fastapi-ml-model
+    ports:
+      - "8000:8000"
+    hostname: fastapi
+    volumes:
+      - ./fastapi-ml-model:/app
+    restart: always
 
 volumes:
   mongodbdata:
-  # flask:
-  # nginxdata:
-
+  fastapi-ml-model:
+  flask-backend:
