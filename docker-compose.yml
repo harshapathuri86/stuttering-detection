@@ -48,8 +48,8 @@ services:
       context: ./react-frontend
     container_name: react-frontend
     hostname: react
-    depends_on:
-      - flask
+      #depends_on:
+      #- flask
     ports:
       - "80:80"
       - "3000:3000"

@@ -170,62 +170,174 @@ def thetaOscillator(ENVELOPE, f, Q, thr, N, verbose=1):
     return x
 
 
-def theta_oscillator_main(file_wav, minfreq, maxfreq, bands, Q_value, center_frequency, threshold, N_bands):
+# def theta_oscillator_main(file_wav, minfreq, maxfreq, bands, Q_value, center_frequency, threshold, N_bands):
 
-    # Generate Gammatone filterbank center frequencies (log-spacing)
+#     # Generate Gammatone filterbank center frequencies (log-spacing)
 
-    # minfreq = 50   #100    #50
-    # maxfreq = 7500   #5000    #7500
-    # bands = 20      #10    #20
+#     # minfreq = 50   #100    #50
+#     # maxfreq = 7500   #5000    #7500
+#     # bands = 20      #10    #20
 
-    cfs = np.zeros((bands, 1))
-    const = (maxfreq/minfreq)**(1/(bands-1))
-    #const = 1.3018
+#     cfs = np.zeros((bands, 1))
+#     const = (maxfreq/minfreq)**(1/(bands-1))
+#     #const = 1.3018
 
-    cfs[0] = 50
-    for k in range(bands-1):
-        cfs[k+1] = cfs[k]*const
+#     cfs[0] = 50
+#     for k in range(bands-1):
+#         cfs[k+1] = cfs[k]*const
 
-    # Read the audio data
-    # wav_data, fs = librosa.load('/content/gdrive/MyDrive/aiish_04_08/old_wav_resamp/sneha_bengaluru_1.wav')
-    # (fs,wav_data) = wavy.read('/content/gdrive/MyDrive/aiish_04_08/old_wav_resamp/sneha_bengaluru_4.wav')
-    wav_data, fs = librosa.load(file_wav)
-    wav_data = librosa.resample(wav_data, fs, 16000)
-    fs = 16000
-    # Compute gammatone envelopes and downsample to 1000 Hz
-    coefs = gammatone.filters.make_erb_filters(fs, cfs, width=1.0)
-    filtered_signal = gammatone.filters.erb_filterbank(wav_data, coefs)
-    hilbert_envelope = np.abs(hilbert(filtered_signal))
-    env = librosa.resample(hilbert_envelope, fs, 1000)
+#     # Read the audio data
+#     # wav_data, fs = librosa.load('/content/gdrive/MyDrive/aiish_04_08/old_wav_resamp/sneha_bengaluru_1.wav')
+#     # (fs,wav_data) = wavy.read('/content/gdrive/MyDrive/aiish_04_08/old_wav_resamp/sneha_bengaluru_4.wav')
+#     print("here 09")
 
-    # Run oscillator-based segmentation
+#     wav_data, fs = librosa.load(file_wav, sr=None)
+#     print("here 10")
 
-    # Q_value = 0.5;  # Q-value of the oscillator, default = 0.5 = critical damping
-    # center_frequency = 5; # in Hz
-    # threshold = 0.01;
+#     wav_data = librosa.resample(wav_data, fs, 16000)
+#     print("here 11")
 
-    # Get the sonority function
-    outh = thetaOscillator(env, center_frequency, Q_value, threshold, N_bands)
-    # Detect the peaks and valleys of the sonority function For initial values
-    peaks, valleys = peakdet(outh, threshold)
-    print("pks", len(peaks), "vals", len(valleys))
-    if len(valleys) and len(peaks):
-        print("inside if")
-        valley_indices = valleys[:, 0]
-        peak_indices = peaks[:, 0]
+#     fs = 16000
+#     # Compute gammatone envelopes and downsample to 1000 Hz
+#     print("here 12")
+#     coefs = gammatone.filters.make_erb_filters(fs, cfs, width=1.0)
+#     print("here 13")
+#     filtered_signal = gammatone.filters.erb_filterbank(wav_data, coefs)
+#     print("here 14")
+#     hilbert_envelope = np.abs(hilbert(filtered_signal))
+#     print("here 15")
+#     env = librosa.resample(hilbert_envelope, fs, 1000)
+#     print("here 16")
 
-        #   Add signal onset if not detected by valley picking
-        if valley_indices[0] > 50:
-            valley_indices = np.insert(valley_indices, 0, 0)
-        if valley_indices[-1] < env.shape[1] - 50:
-            valley_indices = np.append(valley_indices, env.shape[1])
-        if peak_indices[0] > 50:
-            peak_indices = np.insert(peak_indices, 0, 0)
-        if peak_indices[-1] < env.shape[1] - 50:
-            peak_indices = np.append(peak_indices, env.shape[1])
+#     # Run oscillator-based segmentation
 
-    else:
-        print("inside elsed")
-        valley_indices = [0, len(env)]
+#     # Q_value = 0.5;  # Q-value of the oscillator, default = 0.5 = critical damping
+#     # center_frequency = 5; # in Hz
+#     # threshold = 0.01;
 
-    return peaks, valleys, valley_indices
+#     # Get the sonority function
+#     outh = thetaOscillator(env, center_frequency, Q_value, threshold, N_bands)
+#     # Detect the peaks and valleys of the sonority function For initial values
+#     peaks, valleys = peakdet(outh, threshold)
+#     print(peaks.shape, valleys.shape)
+#     peak_indices = []
+#     if len(valleys) and len(peaks):
+#         print("inside if")
+#         valley_indices = valleys[:, 0]
+#         peak_indices = peaks[:, 0]
+
+#         #   Add signal onset if not detected by valley picking
+#         if valley_indices[0] > 50:
+#             valley_indices = np.insert(valley_indices, 0, 0)
+#         if valley_indices[-1] < env.shape[1] - 50:
+#             valley_indices = np.append(valley_indices, env.shape[1])
+#         # if peak_indices[0] > 50:
+#         #     peak_indices = np.insert(peak_indices, 0, 0)
+#         # if peak_indices[-1] < env.shape[1] - 50:
+#         #     peak_indices = np.append(peak_indices, env.shape[1])
+
+#     else:
+#         print("inside elsed")
+#         valley_indices = [0, len(env)]
+
+#     return peaks, valleys, valley_indices, outh
+
+def theta_oscillator_main(file_wav,minfreq,maxfreq,bands,Q_value,center_frequency,threshold,N_bands):
+
+  # Generate Gammatone filterbank center frequencies (log-spacing)
+  
+  # minfreq = 50   #100    #50
+  # maxfreq = 7500   #5000    #7500
+  # bands = 20      #10    #20
+
+  cfs = np.zeros((bands,1))
+  const = (maxfreq/minfreq)**(1/(bands-1))
+  #const = 1.3018
+
+  cfs[0] = 50
+  for k in range(bands-1):
+    cfs[k+1] = cfs[k]*const
+    
+
+  # Read the audio data
+  # wav_data, fs = librosa.load('/content/gdrive/MyDrive/aiish_04_08/old_wav_resamp/sneha_bengaluru_1.wav')
+  # (fs,wav_data) = wavy.read('/content/gdrive/MyDrive/aiish_04_08/old_wav_resamp/sneha_bengaluru_4.wav')
+  wav_data, fs = librosa.load(file_wav)
+  wav_data = librosa.resample(wav_data,fs,16000)
+  fs = 16000
+  # Compute gammatone envelopes and downsample to 1000 Hz
+  coefs = gammatone.filters.make_erb_filters(fs, cfs, width=1.0)
+  filtered_signal = gammatone.filters.erb_filterbank(wav_data, coefs)
+  hilbert_envelope = np.abs(hilbert(filtered_signal))
+  env = librosa.resample(hilbert_envelope,fs,1000)
+
+  # Run oscillator-based segmentation
+  
+  # Q_value = 0.5;  # Q-value of the oscillator, default = 0.5 = critical damping
+  # center_frequency = 5; # in Hz
+  # threshold = 0.01;
+
+  # Get the sonority function
+  outh = thetaOscillator(env,center_frequency,Q_value,threshold,N_bands)
+  # Detect the peaks and valleys of the sonority function For initial values
+  peaks,valleys = peakdet(outh,threshold); 
+  print("pks",len(peaks),"vals",len(valleys))
+#   peaks=peaks[:,0]
+#   valleys=valleys[:,0]
+  if len(valleys) and len(peaks):
+      print("inside if")
+      valley_indices = valleys[:,0]
+      peak_indices = peaks[:,0]
+
+    #   Add signal onset if not detected by valley picking 
+      if valley_indices[0] > 50:
+          valley_indices = np.insert(valley_indices,0,0)
+      if valley_indices[-1] < env.shape[1] -50:
+          valley_indices = np.append(valley_indices,env.shape[1])
+    #   if peak_indices[0] > 50:
+    #       peak_indices = np.insert(peak_indices,0,0)
+    #   if peak_indices[-1] < env.shape[1] -50:
+    #       peak_indices = np.append(peak_indices,env.shape[1])
+      
+  else:
+      print("inside elsed")
+      valley_indices = [0, len(env)]
+    
+  
+  
+#     # Plot the results
+#   pl.figure(figsize=(18,8))
+#   time_axis = [i*1./fs for i in range(len(wav_data))]
+#   pl.plot(time_axis, wav_data)
+#   pl.xlim((-0.01, (len(wav_data))*1./fs+0.01))
+#   time_axis = [i*1./1000 for i in range(len(outh))]
+#   pl.plot(time_axis, outh)
+
+#   for vi in peak_indices:
+#       pl.axvline(vi*1./1000, ymin=0, ymax=1, color='r', linestyle='dashed')
+#   for vi in valley_indices:
+#       pl.axvline(vi*1./1000, ymin=0, ymax=1, color='g', linestyle='dashed')  
+  
+#   for strt in strt_time:
+#     pl.axvline(strt, ymin=0, ymax=1, color='b', linestyle='dashed')
+#   for endt in end_time:
+#     pl.axvline(endt, ymin=0, ymax=1, color='k', linestyle='dashed')
+      
+#   ## Plot syll nuclei
+#   # for pi in peak_indices:
+#   #     pl.axvline(pi*1./1000, ymin=0, ymax=1, color = 'g', linestyle='dashed')
+
+#   ## Plot true boundaries
+#   # zz = [0, 0.264, 0.446, 0.573, 0.7854];
+#   # for z in zz:
+#   #    pl.axvline(z, ymin=0, ymax=1, color = 'k', linestyle='dashed')
+      
+      
+#   pl.legend(['signal', 'sonority', 'estimated syll boundaries']);
+#   pl.title('Theta oscillator based syllable boundary detection');
+#   pl.xlabel ('Time [s]')
+# #   pl.show()
+#   # pl.savefig('output.png')
+  peaks=peaks[:,0].tolist()
+  valleys=valleys[:,0].tolist()
+  return peaks,valleys,valley_indices,outh

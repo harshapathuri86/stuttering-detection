@@ -251,9 +251,7 @@ const DisplayQuestions = ({ questions }) => {
 };
 
 const DisplayQuestion = ({ question }) => {
-  const score = question.score[0].map((_, colIndex) =>
-    question.score.map((row) => row[colIndex])
-  );
+  const score = question.score;
   return (
     <div>
       <Typography component="h1" variant="h5">
@@ -263,37 +261,17 @@ const DisplayQuestion = ({ question }) => {
       <audio controls>
         <source src={question.source} type="audio/webm" controls />
       </audio>
-
-      <Typography variant="body1">
-        <p style={{ fontWeight: "bold" }}>Score</p>
+      <Typography variant="body2">
+        <p style={{ fontWeight: "bold" }}>Prolongation : {score[0]} </p>
       </Typography>
       <Typography variant="body2">
-        <span style={{ fontWeight: "bold" }}>Syllable count:</span>
-        &nbsp;&nbsp;&nbsp;
-        {score[0].length}{" "}
-        <table>
-          <tr>
-            <td style={{ fontWeight: "bold" }}>Syllable index:</td>
-            {score[0].map((item, index) => {
-              return <td key={index}>{index + 1}&nbsp;&nbsp;&nbsp;</td>;
-            })}
-          </tr>
-          <tr>
-            <td style={{ fontWeight: "bold" }}>Ones:</td>
-            {score[0].map((item, index) => {
-              return <td key={index}>{item}</td>;
-            })}
-          </tr>
-          <tr>
-            <td style={{ fontWeight: "bold" }}>Zeros:</td>
-            {score[1].map((item, index) => {
-              return <td key={index}>{item}</td>;
-            })}
-          </tr>
-        </table>
+        <p style={{ fontWeight: "bold" }}>Repetition : {score[1]} </p>
       </Typography>
-
-      <br />
+      <Typography variant="body2">
+        <p style={{ fontWeight: "bold" }}>Predicted boundaries : {score[2]} </p>
+      </Typography>
+      
+	  <br/>
 
       <Divider />
       <br />
@@ -330,10 +308,7 @@ const DisplayPassages = ({ passages }) => {
 
 const DisplayPassage = ({ passage }) => {
   // transpose the passage.score array
-  const score = passage.score[0].map((_, colIndex) =>
-    passage.score.map((row) => row[colIndex])
-  );
-
+  const score = passage.score;
   console.log(score);
 
   return (
@@ -345,34 +320,18 @@ const DisplayPassage = ({ passage }) => {
         <source src={passage.source} type="audio/webm" controls />
       </audio>
 
-      <Typography variant="body1">
-        <p style={{ fontWeight: "bold" }}>Score</p>
+
+      <Typography variant="body2">
+        <p style={{ fontWeight: "bold" }}>Prolongation : {score[0]} </p>
       </Typography>
       <Typography variant="body2">
-        <span style={{ fontWeight: "bold" }}>Syllable count:</span>
-        &nbsp;&nbsp;&nbsp;
-        {score[0].length}{" "}
-        <table>
-          <tr>
-            <td style={{ fontWeight: "bold" }}>Syllable index:</td>
-            {score[0].map((item, index) => {
-              return <td key={index}>{index + 1}&nbsp;&nbsp;&nbsp;</td>;
-            })}
-          </tr>
-          <tr>
-            <td style={{ fontWeight: "bold" }}>Ones:</td>
-            {score[0].map((item, index) => {
-              return <td key={index}>{item}</td>;
-            })}
-          </tr>
-          <tr>
-            <td style={{ fontWeight: "bold" }}>Zeros:</td>
-            {score[1].map((item, index) => {
-              return <td key={index}>{item}</td>;
-            })}
-          </tr>
-        </table>
+        <p style={{ fontWeight: "bold" }}>Repetition : {score[1]} </p>
       </Typography>
+      <Typography variant="body2">
+        <p style={{ fontWeight: "bold" }}>Predicted boundaries : {score[2]} </p>
+      </Typography>
+      
+	  <br/>
 
       <Divider />
       <br />
