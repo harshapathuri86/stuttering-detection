@@ -1,7 +1,7 @@
 from fastapi import FastAPI, UploadFile, HTTPException, Response, File
 from typing import List
 import json
-from model.helper import *
+from model.main_calling_theta2 import get_output
 
 app = FastAPI(
     title="Stuttering detection API",
@@ -9,14 +9,8 @@ app = FastAPI(
 )
 
 
-print("loading model")
-model = load_model()
-print("model loaded")
-
-
 @app.get("/")
 def home():
-    # return {"message": "Hello World"}
     return "Hello World"
 
 
@@ -29,13 +23,15 @@ async def stutter(audios: List[UploadFile] = File(...)):
     try:
         result = []
         for audio in audios:
-            # print(audio.filename)
+            print(audio.filename)
+            print(audio.headers)
             print(audio.content_type)
-            output = run_model(model, audio.file)
+            output = get_output(audio)
+            print("here 2")
             print("output", output)
             result.append(list(output))
             # result[audio.filename] = output
-            print("result", result)
+            # print("result", result)
         result = json.dumps(result)
         return Response(content=result, media_type="application/json")
     except Exception as e:

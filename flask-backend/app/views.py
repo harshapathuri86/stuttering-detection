@@ -28,8 +28,9 @@ app.config["MONGO_URI"] = 'mongodb://' + os.environ['MONGODB_USERNAME'] + ':' + 
 
 app.config['ML_MODEL_URL'] = os.environ['ML_MODEL_URL']
 
-app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(days=30)
-app.config["JWT_REFRESH_TOKEN_EXPIRES"] = timedelta(days=30)
+#app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(days=30)
+#app.config["JWT_REFRESH_TOKEN_EXPIRES"] = timedelta(days=30)
+
 app.config['JWT_SECRET_KEY'] = b'u\xefB@2\xc3\xdbU\xa2S T\xbe\xdc\xe2\xa9'
 # allow query string jwt token
 app.config['JWT_TOKEN_LOCATION'] = ['headers', 'query_string']

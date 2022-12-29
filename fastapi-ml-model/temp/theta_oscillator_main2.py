@@ -189,25 +189,14 @@ def theta_oscillator_main(file_wav, minfreq, maxfreq, bands, Q_value, center_fre
     # Read the audio data
     # wav_data, fs = librosa.load('/content/gdrive/MyDrive/aiish_04_08/old_wav_resamp/sneha_bengaluru_1.wav')
     # (fs,wav_data) = wavy.read('/content/gdrive/MyDrive/aiish_04_08/old_wav_resamp/sneha_bengaluru_4.wav')
-    print("here 09")
-
     wav_data, fs = librosa.load(file_wav)
-    print("here 10")
-
     wav_data = librosa.resample(wav_data, fs, 16000)
-    print("here 11")
-
     fs = 16000
     # Compute gammatone envelopes and downsample to 1000 Hz
-    print("here 12")
     coefs = gammatone.filters.make_erb_filters(fs, cfs, width=1.0)
-    print("here 13")
     filtered_signal = gammatone.filters.erb_filterbank(wav_data, coefs)
-    print("here 14")
     hilbert_envelope = np.abs(hilbert(filtered_signal))
-    print("here 15")
     env = librosa.resample(hilbert_envelope, fs, 1000)
-    print("here 16")
 
     # Run oscillator-based segmentation
 
@@ -239,4 +228,4 @@ def theta_oscillator_main(file_wav, minfreq, maxfreq, bands, Q_value, center_fre
         print("inside elsed")
         valley_indices = [0, len(env)]
 
-    return peaks, valleys, valley_indices
+    return peaks, valleys, valley_indices, outh
