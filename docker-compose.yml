@@ -1,21 +1,6 @@
 version: "3"
 
 services:
-  react:
-   build:
-     context: ./react-frontend
-   container_name: react-frontend
-   hostname: react
-
-   ports:
-     - "80:80"
-     - "3000:3000"
-   environment:
-     - BACKEND_URL=http://flask:5000
-   volumes:
-     - ./react-frontend:/app
-   restart: always
-
   flask:
     build:
       context: ./flask-backend
@@ -57,6 +42,23 @@ services:
   #      - nginxdata:/var/log/nginx
   #    depends_on:
   #      - server
+
+  react:
+    build:
+      context: ./react-frontend
+    container_name: react-frontend
+    hostname: react
+    depends_on:
+      - flask
+    ports:
+      - "80:80"
+      - "3000:3000"
+    environment:
+      - BACKEND_URL=http://flask:5000
+    volumes:
+      - ./react-frontend:/app
+    restart: always
+
 
   mongodb:
     image: mongo:latest

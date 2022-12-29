@@ -13,8 +13,9 @@ FROM nginx:stable-alpine
 
 COPY --from=build-step /app/build /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY 404.html /usr/share/nginx/html/404.html
+COPY 50x.html /usr/share/nginx/html/50x.html
 
-EXPOSE 3000
 EXPOSE 80
 
 # Run nginx
