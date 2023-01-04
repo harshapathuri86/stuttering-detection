@@ -316,12 +316,13 @@ def getQuestion():
 
         try:
             new_question = data['question']
+            bound = data['bound']
         except KeyError:
-            return jsonify({"message": "No question found"}), SIGNALS['NOT_FOUND']
+            return jsonify({"message": "No question/bound found"}), SIGNALS['NOT_FOUND']
 
         # insert new question into db
         try:
-            db.questions.insert_one({'question': new_question})
+            db.questions.insert_one({'question': new_question, 'bound': bound})
             return jsonify({"message": "Question added successfully"}), SIGNALS['OK']
         except Exception as e:
             print("Exception adding new question {}:{}").format(new_question, e)
@@ -358,12 +359,13 @@ def getPassage():
 
         try:
             new_question = data['passage']
+            bound = data['bound']
         except KeyError:
-            return jsonify({"message": "No passage found"}), SIGNALS['NOT_FOUND']
+            return jsonify({"message": "No passage/bound found"}), SIGNALS['NOT_FOUND']
 
         # insert new question into db
         try:
-            db.passages.insert_one({'passage': new_question})
+            db.passages.insert_one({'passage': new_question, 'bound': bound})
             return jsonify({"message": "Passage added successfully"}), SIGNALS['OK']
         except Exception as e:
             print("Exception adding new passage {}:{}").format(new_question, e)
@@ -425,15 +427,24 @@ def newTest():
         print("=="*20)
         audios = []
         i = 0
+        bounds = []
+
         for question in new_test['questions']:
+            # print("question", question)
             question['index'] = i
             i += 1
             audios.append(question['wav'])
+            bounds.append(str(question['bound']))
+
         for passage in new_test['passages']:
             passage['index'] = i
             i += 1
             audios.append(passage['wav'])
+            bounds.append(str(passage['bound']))
+
         audioFiles = []
+        bounds = ",".join(bounds)
+
         for i, audio in enumerate(audios):
             audioFiles.append(
                 ('audios',
@@ -441,10 +452,17 @@ def newTest():
                  )
             )
 
-        output = requests.post(app.config['ML_MODEL_URL'], files=audioFiles)
+        output = requests.post(app.config['ML_MODEL_URL'],
+                               data={"bounds":bounds} , files=audioFiles)
+
+        if(output.status_code!=200):
+            return jsonify({"message": "Error in model service"}), SIGNALS['INTERNAL_SERVER_ERROR']
+
+        print("output", output.text)
 
         output = json.loads(output.text)
         print("=="*20)
+        # print(output)
         for question in new_test['questions']:
             question['score'] = output[question['index']]
             del question['wav']

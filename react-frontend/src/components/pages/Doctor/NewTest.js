@@ -130,6 +130,7 @@ export default function NewTest() {
     formdata.append("questions", JSON.stringify(values.questions));
     formdata.append("passages", JSON.stringify(values.passages));
 
+    console.log("Form", formdata)
     // for (let [key, value] of formdata.entries()) {
     //   console.log(key, value);
     // }

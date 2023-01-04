@@ -261,6 +261,10 @@ const DisplayQuestion = ({ question }) => {
       <audio controls>
         <source src={question.source} type="audio/webm" controls />
       </audio>
+
+      <Typography variant="body2">
+        <p style={{ fontWeight: "bold" }}>Actual boundaries : {question.bound} </p>
+      </Typography>
       <Typography variant="body2">
         <p style={{ fontWeight: "bold" }}>Prolongation : {score[0]} </p>
       </Typography>
@@ -270,7 +274,7 @@ const DisplayQuestion = ({ question }) => {
       <Typography variant="body2">
         <p style={{ fontWeight: "bold" }}>Predicted boundaries : {score[2]} </p>
       </Typography>
-      
+
 	  <br/>
 
       <Divider />
@@ -320,7 +324,9 @@ const DisplayPassage = ({ passage }) => {
         <source src={passage.source} type="audio/webm" controls />
       </audio>
 
-
+      <Typography variant="body2">
+        <p style={{ fontWeight: "bold" }}>Actual boundaries : {passage.bound} </p>
+      </Typography>
       <Typography variant="body2">
         <p style={{ fontWeight: "bold" }}>Prolongation : {score[0]} </p>
       </Typography>
@@ -330,7 +336,7 @@ const DisplayPassage = ({ passage }) => {
       <Typography variant="body2">
         <p style={{ fontWeight: "bold" }}>Predicted boundaries : {score[2]} </p>
       </Typography>
-      
+
 	  <br/>
 
       <Divider />

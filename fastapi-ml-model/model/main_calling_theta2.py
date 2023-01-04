@@ -5,7 +5,7 @@ import scipy.io.wavfile as wavy
 from model.feat_extr_nn2 import *
 import math
 from model.finding_len_wav_time import *
-from model.train_neural_network import *
+# from model.train_neural_network import *
 from scipy.io import savemat
 # from model.write_xlsx import *
 from model.rep_pro_spu_rem import *
@@ -19,16 +19,17 @@ def for_single_file_including_original_boundaries(wave_files, minfreqs, maxfreqs
 
     print("len of valley indices", len(val_ind))
     if len(val_ind) > actual_boundary+3:
+        print("wooh 0")
         final_peaks_points1, final_valley_points1, ori_valley_points, index_to_be_removed = removing_spurious_peaks(
             original_array, pks, vals)  # ,val_inda
+        print("wooh 1")
         final_peaks_points, final_valley_points = removing_indexes_for_all_types(
             index_to_be_removed, pks, vals)
-        # print("wooh 1")
-        # print("wooh 2")
+        print("wooh 2")
 
         final_pks_points2, final_valley_points2, ori_valley_points2, index_to_be_removed2 = for_prolongation(
             original_array, pks, vals)
-        # print("wooh 3")
+        print("wooh 3")
 
         final_peaks_points3, final_valley_points3 = removing_indexes_for_all_types(
             index_to_be_removed2, final_peaks_points, final_valley_points)
@@ -59,14 +60,14 @@ final_feats_pred = []
 original_bound_count = 15
 
 
-def get_output(wave_file):
+def get_output(wave_file, bound):
 
     act_pks, act_vals, pro_ind, rep_ind = for_single_file_including_original_boundaries(
-        wave_file, minfreq, maxfreq, bands, Q_value, center_frequency, threshold, N_bands, original_bound_count)
+        wave_file, minfreq, maxfreq, bands, Q_value, center_frequency, threshold, N_bands, bound)
     # print("pro_ind", len(pro_ind), "rep_ind", len(rep_ind), len(act_pks), len(act_vals))
     # return pro_ind, rep_ind, act_pks, act_vals
     # prolongation, repetation, predicted boundaries
-    return len(pro_ind), len(rep_ind), len(act_pks) 
+    return len(pro_ind), len(rep_ind), len(act_pks)
 
 # if __name__ == "__main__":
     # get_output("/home/harsha/Downloads/1.wav")

@@ -13,8 +13,8 @@ def removing_spurious_peaks(original_array,pks_val,valley_ind_vals):
   # print("len",len(valley_ind_vals),len(pks_val))
   nk=len(valley_ind_vals)-1
   for i in range(nk):
-  
-    # try:
+
+    try:
       # print("values in bb",original_array[valley_ind_vals[i]],"index value in bb",valley_ind_vals[i])
       if original_array[valley_ind_vals[i]]<=0.1 and original_array[valley_ind_vals[i+1]]<=0.1:
         # valley_ind_vals.pop(i+1)
@@ -24,8 +24,8 @@ def removing_spurious_peaks(original_array,pks_val,valley_ind_vals):
         # print("removed index bb",valley_ind_vals[i+1],"value",original_array[valley_ind_vals[i+1]])
       else:
         continue
-    # except: 
-      # print("some went wrong spurous peaks",valley_ind_vals[i])
+    except:
+      print("some went wrong spurous peaks",valley_ind_vals[i])
 
   return final_pks_points,final_valley_points,valley_ind_vals,index_list
 def for_repetation1(original_array,pks_val,valley_ind_vals):
@@ -41,7 +41,7 @@ def for_repetation1(original_array,pks_val,valley_ind_vals):
   # print("len",len(valley_ind_vals),len(pks_val))
   nk=len(valley_ind_vals)-1
   for i in range(nk):
-  
+
     try:
       diff=np.abs(valley_ind_vals[i]-valley_ind_vals[i+1])
       diff=round(diff,3)
@@ -56,7 +56,7 @@ def for_repetation1(original_array,pks_val,valley_ind_vals):
         # print("removed index bb",valley_ind_vals[i+1],"value",original_array[valley_ind_vals[i+1]])
       else:
         continue
-    except: 
+    except:
       print("some went wrong repetation",valley_ind_vals[i],diff)
 
   return final_pks_points,final_valley_points,valley_ind_vals,index_list
@@ -68,7 +68,7 @@ def for_prolongation(original_array,pks_val,valley_ind_vals):
     final_valley_points.append(valley_ind_vals[k])
   for j in range(len(pks_val)):
     final_pks_points.append(pks_val[j])
- 
+
   # final_valley_points=valley_ind_vals.copy()
   # final_pks_points=pks_val.copy()
   # print("len of both in prolomg",len(pks_val),len(valley_ind_vals))
@@ -92,13 +92,13 @@ def for_prolongation(original_array,pks_val,valley_ind_vals):
         index_list.append(i+1)
         final_pks_points.pop(i+1)
         # print("final pks points at i",final_pks_points)
-        
 
-        
-    except: 
+
+
+    except:
       print("i",i)
       print("some went wrong in pro",pks_val[i],original_array[pks_val[i]])
-      
+
   # print("pks final lne",len(final_pks_points),"final val points",len(final_valley_points),index_list)
   return final_pks_points,final_valley_points,valley_ind_vals,index_list
 def removing_indexes_for_all_types(index_value_list,original_index_pk_list,original_index_val_list):
@@ -109,7 +109,7 @@ def removing_indexes_for_all_types(index_value_list,original_index_pk_list,origi
       pks.append(original_index_pk_list[i])
       vals.append(original_index_val_list[i])
       # print("pks",pks,"val",vals)
-    for i in range(len(pks)):  
+    for i in range(len(pks)):
       original_index_pk_list.remove(pks[i])
       original_index_val_list.remove(vals[i])
 

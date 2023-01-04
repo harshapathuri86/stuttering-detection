@@ -1,4 +1,4 @@
-from fastapi import FastAPI, UploadFile, HTTPException, Response, File
+from fastapi import FastAPI, UploadFile, HTTPException, Response, File, Form
 from typing import List
 import json
 from model.main_calling_theta2 import get_output
@@ -16,19 +16,20 @@ def home():
 
 @app.post("/")
 # only allow wav format file to be uploaded
-async def stutter(audios: List[UploadFile] = File(...)):
+async def stutter(audios: List[UploadFile] = File(...), bounds:str = Form()):
     for audio in audios:
         if audio.content_type not in ["audio/wave", "audio/wav"]:
             raise HTTPException(400, detail="Invalid document type of file {}".format(audio.filename))
     try:
+        bounds = [int(b) for b in bounds.split(',')]
         result = []
-        for audio in audios:
-            output = get_output(audio.file)
-            print("here 2")
-            print("output", output)
+        n = len(audios)
+        for i in range(n):
+            audio  = audios[i]
+            bound = bounds[i]
+            output = get_output(audio.file, bound)
             result.append(list(output))
-            # result[audio.filename] = output
-            # print("result", result)
+
         result = json.dumps(result)
         return Response(content=result, media_type="application/json")
     except Exception as e:
