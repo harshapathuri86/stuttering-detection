@@ -39,7 +39,7 @@ export default function ForgotPassword() {
     console.log(data);
 
     axios
-      .post("/api/forgotpassword", data, {
+      .post("http://localhost:5000/forgotpassword", data, {
         headers: {
           "Content-Type": "application/json",
         },

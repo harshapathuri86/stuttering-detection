@@ -88,7 +88,7 @@ export function TestList() {
   useEffect(() => {
     // console.log("token", localStorage.getItem("access_token"));
     axios
-      .get("/api/tests", {
+      .get("http://localhost:5000/tests", {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("access_token")}`,
         },

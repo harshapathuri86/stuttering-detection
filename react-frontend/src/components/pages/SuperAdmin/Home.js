@@ -130,7 +130,7 @@ export function DoctorsList() {
   useEffect(() => {
     // console.log("token", localStorage.getItem("access_token"));
     axios
-      .get("/api/doctors", {
+      .get("http://localhost:5000/doctors", {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("access_token")}`,
         },
@@ -166,7 +166,7 @@ export function PatientsList() {
   useEffect(() => {
     // console.log("token", localStorage.getItem("access_token"));
     axios
-      .get("/api/patients", {
+      .get("http://localhost:5000/patients", {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("access_token")}`,
         },
@@ -230,7 +230,7 @@ const UserCard = ({ test }) => {
       "Access-Control-Allow-Origin": "*",
       "Content-Type": "application/json",
     };
-    axios("/api/doctors/edit", {
+    axios("http://localhost:5000/doctors/edit", {
       method: "POST",
       data: article,
       headers: {
@@ -259,7 +259,7 @@ const UserCard = ({ test }) => {
       "Access-Control-Allow-Origin": "*",
       "Content-Type": "application/json",
     };
-    axios("/api/doctors/edit2", {
+    axios("http://localhost:5000/doctors/edit2", {
       method: "POST",
       data: article,
       headers: {

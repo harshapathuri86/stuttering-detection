@@ -32,7 +32,7 @@ export function Home() {
     if (user.usertype !== 1) window.location.href = "/";
     setUser(user);
     axios
-      .get(`/api/username/${id}`, {
+      .get(`http://localhost:5000/username/${id}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("access_token")}`,
         },
@@ -96,7 +96,7 @@ export function TestList(ID) {
     console.log(id.ID);
     // console.log("token", localStorage.getItem("access_token"));
     axios
-      .get(`/api/user/${id.ID}`, {
+      .get(`http://localhost:5000/user/${id.ID}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("access_token")}`,
         },

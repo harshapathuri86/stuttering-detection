@@ -21,12 +21,11 @@ import base64
 CORS(app, supports_credentials=True, origins='*')
 
 # dev config
-#app.config['MONGO_URI'] = 'mongodb://flaskuser:flaskpassword@localhost:27017'
-app.config["MONGO_URI"] = 'mongodb://' + os.environ['MONGODB_USERNAME'] + ':' + \
-    os.environ['MONGODB_PASSWORD'] + '@' + \
-    os.environ['MONGODB_HOSTNAME'] + ':27017'
+app.config['MONGO_URI'] = 'mongodb://flaskuser:flaskpassword@localhost:27017'
+#app.config["MONGO_URI"] = 'mongodb://' + os.environ['MONGODB_USERNAME'] + ':' + os.environ['MONGODB_PASSWORD'] + '@' + os.environ['MONGODB_HOSTNAME'] + ':27017'
 
-app.config['ML_MODEL_URL'] = os.environ['ML_MODEL_URL']
+#app.config['ML_MODEL_URL'] = os.environ['ML_MODEL_URL']
+app.config['ML_MODEL_URL'] = "localhost:8000"
 
 #app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(days=30)
 #app.config["JWT_REFRESH_TOKEN_EXPIRES"] = timedelta(days=30)
