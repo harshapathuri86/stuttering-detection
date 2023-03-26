@@ -75,35 +75,71 @@ export function Edit() {
   }, []);
 
   return (
-    <ThemeProvider theme={theme}>
-      <Container component="main" maxWidth="xs">
+  //   <ThemeProvider theme={theme}>
+  //     <Container component="main" maxWidth="xs">
+  //       <CssBaseline />
+  //       <Box
+  //         sx={{
+  //           marginTop: 8,
+  //           display: "flex",
+  //         }}
+  //       >
+  //         <Typography component="h1" variant="h5">
+  //           Welcome to your dashboard, {user.username} !
+  //         </Typography>
+  //       </Box>
+  //       <Box
+  //         sx={{
+  //           marginTop: 8,
+  //           display: "flex",
+  //         }}
+  //       >
+  //         <Typography component="h1" variant="h5">
+  //           You are logged in as SUPERADMIN.
+  //         </Typography>
+  //       </Box>
+  //       <Box sx={{ width: "100%" }}>
+  //         <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
+  //           <Tabs
+  //             value={value}
+  //             onChange={handleChange}
+  //             aria-label="basic tabs example"
+  //           >
+  //             <Tab label="Doctors" {...a11yProps(0)} />
+  //             <Tab label="Patients" {...a11yProps(1)} />
+  //           </Tabs>
+  //         </Box>
+  //         <TabPanel value={value} index={0}>
+  //           <DoctorsList />
+  //         </TabPanel>
+  //         <TabPanel value={value} index={1}>
+  //           <PatientsList key={1} user={user} />
+  //         </TabPanel>
+  //       </Box>
+  //       {/* <DoctorsList/> */}
+  //     </Container>
+  //   </ThemeProvider>
+  // );
+  <ThemeProvider theme={theme}>
+      <Container maxWidth="xs">
         <CssBaseline />
-        <Box
-          sx={{
-            marginTop: 8,
-            display: "flex",
-          }}
-        >
-          <Typography component="h1" variant="h5">
-            Welcome to your dashboard, {user.username} !
+        <Box mt={8} display="flex" justifyContent="center">
+          <Typography variant="h5">
+            Welcome to your dashboard, {user.username}!
           </Typography>
         </Box>
-        <Box
-          sx={{
-            marginTop: 8,
-            display: "flex",
-          }}
-        >
-          <Typography component="h1" variant="h5">
+        <Box mt={2} display="flex" justifyContent="center">
+          <Typography variant="h5">
             You are logged in as SUPERADMIN.
           </Typography>
         </Box>
-        <Box sx={{ width: "100%" }}>
-          <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
+        <Box width="100%" mt={4}>
+          <Box borderBottom={1} borderColor="divider">
             <Tabs
               value={value}
               onChange={handleChange}
               aria-label="basic tabs example"
+              centered
             >
               <Tab label="Doctors" {...a11yProps(0)} />
               <Tab label="Patients" {...a11yProps(1)} />
@@ -116,7 +152,6 @@ export function Edit() {
             <PatientsList key={1} user={user} />
           </TabPanel>
         </Box>
-        {/* <DoctorsList/> */}
       </Container>
     </ThemeProvider>
   );
@@ -194,6 +229,34 @@ const PatientsList = ({ user }) => {
 };
 
 const UserCard = ({ user }) => {
+  // return (
+  //   <Card
+  //     sx={{
+  //       marginTop: 8,
+  //       display: "flex",
+  //       flexDirection: "row",
+  //     }}
+  //   >
+  //     {/* <Grid> */}
+  //     <Grid item xs={8}>
+  //       <TextField
+  //         required
+  //         id="outlined-required"
+  //         label="UserName"
+  //         defaultValue={user.username}
+  //       />
+  //     </Grid>
+  //     <Grid item xs={8}>
+  //       <TextField
+  //         required
+  //         id="outlined-required"
+  //         label="Email"
+  //         defaultValue={user.email}
+  //       />
+  //     </Grid>
+  //   </Card>
+  //   // </Grid>
+  // );
   return (
     <Card
       sx={{
@@ -202,13 +265,21 @@ const UserCard = ({ user }) => {
         flexDirection: "row",
       }}
     >
-      {/* <Grid> */}
       <Grid item xs={8}>
         <TextField
           required
           id="outlined-required"
           label="UserName"
           defaultValue={user.username}
+          InputProps={{
+            style: { color: "#333" },
+            onBlur: (event) => {
+              event.target.style.color = "#333";
+            },
+            onFocus: (event) => {
+              event.target.style.color = "#00BFFF";
+            },
+          }}
         />
       </Grid>
       <Grid item xs={8}>
@@ -220,6 +291,6 @@ const UserCard = ({ user }) => {
         />
       </Grid>
     </Card>
-    // </Grid>
   );
+  
 };
