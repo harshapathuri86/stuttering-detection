@@ -9,7 +9,7 @@ import pickle
 
 def load_model():
     try:
-        model = pickle.load(open('model/mfcc_mod1', 'rb'))
+        model = pickle.load(open('model_alt/mfcc_mod1', 'rb'))
     except Exception as e:
         print(e)
         sys.exit(1)

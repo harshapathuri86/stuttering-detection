@@ -10,9 +10,11 @@ app = FastAPI(
 )
 
 
-print("loading model")
-model = load_model()
-print("model loaded")
+print("loading models...")
+model1 = load_model()
+print("model1 loaded")
+model2 = alto.load_model()
+print("model2 loaded")
 
 
 @app.get("/")
@@ -32,7 +34,7 @@ async def stutter(audios: List[UploadFile] = File(...) ):
         for audio in audios:
             # print(audio.filename)
             print(audio.content_type)
-            output = run_model(model, audio.file)
+            output = run_model(model1, audio.file)
             result.append(list(output))
             # result[audio.filename] = output
         result = json.dumps(result)
@@ -51,7 +53,7 @@ async def stutter(audios: List[UploadFile] = File(...) ):
         for audio in audios:
             # print(audio.filename)
             print(audio.content_type)
-            output = alto.run_model(model, audio.file)
+            output = alto.run_model(model2, audio.file)
             result.append(list(output))
             # result[audio.filename] = output
         result = json.dumps(result)
