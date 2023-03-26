@@ -1,4 +1,4 @@
-node_modules
-venv
 __pycache__
 rndf
+venv
+node_modules
