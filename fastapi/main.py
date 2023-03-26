@@ -2,6 +2,7 @@ from fastapi import FastAPI, UploadFile, HTTPException, Response, File
 from typing import List
 import json
 from model.helper import *
+import model_alt.helper as alto
 
 app = FastAPI(
     title="Stuttering detection API",
@@ -22,7 +23,7 @@ def home():
 
 @app.post("/")
 # only allow wav format file to be uploaded
-async def stutter(audios: List[UploadFile] = File(...)):
+async def stutter(audios: List[UploadFile] = File(...) ):
     for audio in audios:
         if audio.content_type not in ["audio/wave", "audio/wav"]:
             raise HTTPException(400, detail="Invalid document type of file {}".format(audio.filename))
@@ -32,6 +33,25 @@ async def stutter(audios: List[UploadFile] = File(...)):
             # print(audio.filename)
             print(audio.content_type)
             output = run_model(model, audio.file)
+            result.append(list(output))
+            # result[audio.filename] = output
+        result = json.dumps(result)
+        return Response(content=result, media_type="application/json")
+    except Exception as e:
+        print(e)
+        raise HTTPException(500, detail="{}".format(e))
+
+@app.post("/alt")
+async def stutter(audios: List[UploadFile] = File(...) ):
+    for audio in audios:
+        if audio.content_type not in ["audio/wave", "audio/wav"]:
+            raise HTTPException(400, detail="Invalid document type of file {}".format(audio.filename))
+    try:
+        result = []
+        for audio in audios:
+            # print(audio.filename)
+            print(audio.content_type)
+            output = alto.run_model(model, audio.file)
             result.append(list(output))
             # result[audio.filename] = output
         result = json.dumps(result)

@@ -281,6 +281,30 @@ export default function UserDetails({
           </Select>
         </Grid>
         <Grid item xs={6}>
+          <InputLabel id="model_type-label">model_type</InputLabel>{" "}
+          <Select
+            variant="outlined"
+            fullWidth
+            labelId="model_type-label"
+            defaultValue={""}
+            value={values.model_type}
+            {...register("model_type", {
+              required: true,
+              validate: {
+                notEmpty: (value) => value !== "" || "Please select model_type",
+              },
+              onChange: handleChange("model_type"),
+              value: values.model_type,
+            })}
+            helpertext={formState.errors.model_type?.message}
+            error={formState.errors.role ? true : false}
+          >
+            {/* <MenuItem value=""> </MenuItem> */}
+            <MenuItem value="ML">ML</MenuItem>
+            <MenuItem value="SP">SP</MenuItem>
+          </Select>
+        </Grid>
+        <Grid item xs={6}>
           <TextField
             required
             id="nature"

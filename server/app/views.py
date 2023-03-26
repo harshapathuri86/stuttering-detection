@@ -391,7 +391,12 @@ def newTest():
     if request.method == 'POST':
 
         form = request.form
+        # print ( "**"*20)
+        # print ( form ) 
+        # print ( "**"*20)
 
+        model_type = form["model_type"]
+        # model_type = "ML"
         new_test = {}
         for key, value in form.items():
             new_test[key] = value
@@ -436,7 +441,11 @@ def newTest():
                  )
             )
 
-        output = requests.post('http://localhost:8000/', files=audioFiles)
+        print ("now posting to port 8000, model choosen is: ", model_type, " :)")
+        if ( model_type == "ML" ) : 
+            output = requests.post('http://localhost:8000/', files=audioFiles)
+        elif (model_type == "SP" ):
+            output = requests.post('http://localhost:8000/alt', files=audioFiles)
 
         output = json.loads(output.text)
         print("=="*20)

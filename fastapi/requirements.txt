@@ -5,4 +5,4 @@ python-multipart
 python_speech_features
 scipy
 keras
-tensorflow
+tensorflow==2.10.1

@@ -175,6 +175,15 @@ export default function ViewTest() {
 
             <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)' }}>
               <Typography variant="body1">
+                <span style={{ fontWeight: 'bold' }}>model_type</span>
+              </Typography>
+              <Typography variant="body1">
+                {test.model_type}
+              </Typography>
+            </Box>
+
+            <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)' }}>
+              <Typography variant="body1">
                 <span style={{ fontWeight: 'bold' }}>Nature</span>
               </Typography>
               <Typography variant="body1">
